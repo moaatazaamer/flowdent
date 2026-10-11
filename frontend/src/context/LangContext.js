@@ -32,7 +32,11 @@ export function LangProvider({ children }) {
   }, [lang, t]);
 
   const switchLang = useCallback((next) => {
-    setLang((cur) => (next === 'en' || next === 'ar' ? next : cur === 'en' ? 'ar' : 'en'));
+    // No argument toggles; a known code switches to it; anything else is ignored.
+    setLang((cur) => {
+      if (next === undefined) return cur === 'en' ? 'ar' : 'en';
+      return next === 'en' || next === 'ar' ? next : cur;
+    });
   }, []);
 
   const value = useMemo(

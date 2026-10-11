@@ -1,0 +1,29 @@
+# Used by the scenario tests (@ActiveProfiles("test")): in-memory H2 in MySQL mode,
+# no Eureka, uploads under target/. No MySQL server is needed to run `mvn test`.
+spring:
+  datasource:
+    url: jdbc:h2:mem:flowdent_test;MODE=MySQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+  cloud:
+    discovery:
+      enabled: false
+
+eureka:
+  client:
+    enabled: false
+    register-with-eureka: false
+    fetch-registry: false
+
+jwt:
+  secret: scenario-test-secret-key-that-is-long-enough-0123456789
+
+app:
+  upload-dir: target/test-uploads

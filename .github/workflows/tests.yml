@@ -1,0 +1,72 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  backend:
+    name: Backend (Spring Boot)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Build eureka-server and api-gateway
+        run: |
+          set -o pipefail
+          mvn -B -f eureka-server/pom.xml -DskipTests package 2>&1 | tee build-eureka.log
+          mvn -B -f api-gateway/pom.xml -DskipTests package 2>&1 | tee build-gateway.log
+
+      - name: Unit and scenario tests (backend-service)
+        run: |
+          set -o pipefail
+          mvn -B -f backend-service/pom.xml test 2>&1 | tee build-backend.log
+
+      - name: Report results
+        if: always()
+        run: python3 .github/scripts/report.py backend
+
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-reports
+          path: |
+            backend-service/target/surefire-reports/
+            build-*.log
+
+  frontend:
+    name: Frontend (React)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install
+        run: npm install --no-audit --no-fund 2>&1 | tee ../install-frontend.log
+
+      - name: Unit tests
+        run: |
+          set -o pipefail
+          CI=true npx react-scripts test --watchAll=false --json --outputFile=../jest-results.json 2>&1 | tee ../test-frontend.log
+
+      - name: Production build
+        run: |
+          set -o pipefail
+          CI=false npm run build 2>&1 | tee ../build-frontend.log
+
+      - name: Report results
+        if: always()
+        working-directory: .
+        run: python3 .github/scripts/report.py frontend
