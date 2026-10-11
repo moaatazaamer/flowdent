@@ -80,15 +80,21 @@ def frontend():
                 details.append(f"{name} › {t.get('fullName')}\n{msg}")
     summary = (f"{data.get('numTotalTests')} tests, {data.get('numPassedTests')} passed, "
                f"{data.get('numFailedTests')} failed, {data.get('numFailedTestSuites')} failed files")
-    build_errors = tail_errors('build-frontend.log')
+    status = 0
     if details:
         emit('error', f'Frontend tests failed: {summary}', '\n\n'.join(details))
-        return 1
-    if any('Failed to compile' in l for l in build_errors):
-        emit('error', 'Frontend build failed', '\n'.join(build_errors))
-        return 1
-    emit('notice', 'Frontend tests passed', summary)
-    return 0
+        status = 1
+    else:
+        emit('notice', 'Frontend tests passed', summary)
+    if os.path.exists('build-frontend.log'):
+        with open('build-frontend.log', encoding='utf-8', errors='replace') as f:
+            lines = f.read().splitlines()
+        for i, line in enumerate(lines):
+            if 'Failed to compile' in line:
+                emit('error', 'Frontend production build failed', '\n'.join(lines[i:i + 80]))
+                status = 1
+                break
+    return status
 
 
 if __name__ == '__main__':
