@@ -8,6 +8,7 @@ import { formatPrice, imgFallback, localized, PLACEHOLDER_IMG } from '../../util
 const EMPTY = {
   name: '', nameAr: '', description: '', descriptionAr: '',
   price: '', stockQuantity: 0, imageUrl: '', categoryId: '',
+  sku: '', costPrice: '', reorderLevel: 10,
 };
 
 export default function AdminProducts() {
@@ -22,9 +23,16 @@ export default function AdminProducts() {
   const [listError, setListError] = useState('');
 
   const load = useCallback(() => {
-    Promise.all([api.get('/products'), api.get('/categories')])
-      .then(([p, c]) => {
-        setProducts(p.data);
+    Promise.all([api.get('/products'), api.get('/categories'), api.get('/admin/stock')])
+      .then(([p, c, s]) => {
+        // Cost and reorder level are internal and only come from the admin stock API.
+        const internal = Object.fromEntries(s.data.map((x) => [x.id, x]));
+        setProducts(p.data.map((x) => ({
+          ...x,
+          costPrice: internal[x.id]?.costPrice ?? null,
+          reorderLevel: internal[x.id]?.reorderLevel ?? 10,
+          marginPercent: internal[x.id]?.marginPercent ?? null,
+        })));
         setCategories(c.data);
       })
       .catch(() => setListError(t.common.error));
@@ -37,7 +45,8 @@ export default function AdminProducts() {
     return products.filter((p) => {
       if (catFilter && String(p.category?.id) !== catFilter) return false;
       if (!f) return true;
-      return (p.name || '').toLowerCase().includes(f) || (p.nameAr || '').includes(filter.trim());
+      return (p.name || '').toLowerCase().includes(f) || (p.nameAr || '').includes(filter.trim())
+        || (p.sku || '').toLowerCase().includes(f);
     });
   }, [products, filter, catFilter]);
 
@@ -45,7 +54,8 @@ export default function AdminProducts() {
     setError('');
     setEditing(
       p
-        ? { ...EMPTY, ...p, categoryId: p.category?.id ? String(p.category.id) : '' }
+        ? { ...EMPTY, ...p, sku: p.sku || '', costPrice: p.costPrice ?? '',
+            categoryId: p.category?.id ? String(p.category.id) : '' }
         : { ...EMPTY, categoryId: catFilter }
     );
   };
@@ -63,6 +73,9 @@ export default function AdminProducts() {
       stockQuantity: Number(editing.stockQuantity) || 0,
       imageUrl: editing.imageUrl,
       categoryId: editing.categoryId ? Number(editing.categoryId) : null,
+      sku: editing.sku || '',
+      costPrice: editing.costPrice === '' || editing.costPrice == null ? null : Number(editing.costPrice),
+      reorderLevel: editing.reorderLevel === '' ? null : Number(editing.reorderLevel),
     };
     try {
       if (editing.id) await api.put(`/products/${editing.id}`, payload);
@@ -112,7 +125,9 @@ export default function AdminProducts() {
               <th>{t.admin.image}</th>
               <th>{t.admin.name}</th>
               <th>{t.admin.category}</th>
+              <th className="num">{t.ops.costPrice}</th>
               <th className="num">{t.common.price}</th>
+              <th className="num">{t.ops.margin}</th>
               <th className="num">{t.admin.stock}</th>
               <th className="end">{t.common.actions}</th>
             </tr>
@@ -124,11 +139,14 @@ export default function AdminProducts() {
                 <td>
                   <strong>{p.name}</strong>
                   <div className="small muted" dir="rtl" lang="ar">{p.nameAr}</div>
+                  {p.sku && <div className="small muted">{p.sku}</div>}
                 </td>
                 <td>{p.category ? localized(p.category, 'name', lang) : '—'}</td>
+                <td className="num">{p.costPrice != null ? formatPrice(p.costPrice, lang) : '—'}</td>
                 <td className="num">{formatPrice(p.price, lang)}</td>
+                <td className="num">{p.marginPercent != null ? `${p.marginPercent}%` : '—'}</td>
                 <td className="num">
-                  <span className={`pill ${p.stockQuantity === 0 ? 'pill-bad' : p.stockQuantity < 10 ? 'pill-warn' : 'pill-muted'}`}>{p.stockQuantity}</span>
+                  <span className={`pill ${p.stockQuantity === 0 ? 'pill-bad' : p.stockQuantity <= p.reorderLevel ? 'pill-warn' : 'pill-muted'}`}>{p.stockQuantity}</span>
                 </td>
                 <td className="end nowrap">
                   <button className="link-btn" onClick={() => openEdit(p)}>{t.common.edit}</button>
@@ -164,12 +182,24 @@ export default function AdminProducts() {
             </div>
             <div className="grid-3">
               <label className="field">
-                <span>{t.common.price}</span>
+                <span>{t.ops.sellPrice} ({t.ops.egp})</span>
                 <input required type="number" min="0" step="0.01" dir="ltr" value={editing.price} onChange={set('price')} />
+              </label>
+              <label className="field">
+                <span>{t.ops.costPrice} ({t.ops.egp})</span>
+                <input type="number" min="0" step="0.01" dir="ltr" value={editing.costPrice} onChange={set('costPrice')} />
+              </label>
+              <label className="field">
+                <span>{t.ops.sku}</span>
+                <input dir="ltr" value={editing.sku} onChange={set('sku')} />
               </label>
               <label className="field">
                 <span>{t.admin.stock}</span>
                 <input required type="number" min="0" step="1" dir="ltr" value={editing.stockQuantity} onChange={set('stockQuantity')} />
+              </label>
+              <label className="field">
+                <span>{t.ops.reorderLevel}</span>
+                <input type="number" min="0" step="1" dir="ltr" value={editing.reorderLevel} onChange={set('reorderLevel')} />
               </label>
               <label className="field">
                 <span>{t.admin.category}</span>

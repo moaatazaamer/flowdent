@@ -11,6 +11,13 @@ const ICONS = {
   orders: 'M6 3h12v18l-3-2-3 2-3-2-3 2V3zm3 5h6M9 12h6',
   customers: 'M12 12a4 4 0 100-8 4 4 0 000 8zm-7 9c0-4 3-6 7-6s7 2 7 6',
   import: 'M12 3v12m0 0l-4-4m4 4l4-4M4 17v3h16v-3',
+  clients: 'M4 21V8l8-5 8 5v13M9 21v-6h6v6M12 8v4M10 10h4',
+  providers: 'M3 7h11v9H3zM14 10h4l3 3v3h-7M7 19a2 2 0 100-4 2 2 0 000 4zm10 0a2 2 0 100-4 2 2 0 000 4z',
+  purchases: 'M4 4h2l2 11h10l2-8H7M10 20a1 1 0 100-2 1 1 0 000 2zm7 0a1 1 0 100-2 1 1 0 000 2z',
+  returns: 'M9 14L4 9l5-5M4 9h11a5 5 0 010 10h-3',
+  stock: 'M3 7l9-4 9 4-9 4-9-4zm0 5l9 4 9-4M3 17l9 4 9-4',
+  expenses: 'M4 6h16v12H4zM4 10h16M8 15h3',
+  finance: 'M4 20V10M10 20V4M16 20v-7M22 20H2',
 };
 
 function Icon({ name }) {
@@ -27,13 +34,29 @@ export default function AdminLayout() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
-  const links = [
-    { to: '/admin', label: t.admin.dashboard, icon: 'dashboard', end: true, show: true },
-    { to: '/admin/orders', label: t.admin.orders, icon: 'orders', show: true },
-    { to: '/admin/products', label: t.admin.products, icon: 'products', show: isAdmin },
-    { to: '/admin/categories', label: t.admin.categories, icon: 'categories', show: isAdmin },
-    { to: '/admin/customers', label: t.admin.customers, icon: 'customers', show: isAdmin },
-    { to: '/admin/import', label: t.admin.import, icon: 'import', show: isAdmin },
+  const groups = [
+    { label: null, links: [
+      { to: '/admin', label: t.admin.dashboard, icon: 'dashboard', end: true, show: true },
+    ] },
+    { label: t.ops.groupSales, links: [
+      { to: '/admin/orders', label: t.admin.orders, icon: 'orders', show: true },
+      { to: '/admin/clients', label: t.ops.clients, icon: 'clients', show: isAdmin },
+    ] },
+    { label: t.ops.groupOperations, links: [
+      { to: '/admin/purchases', label: t.ops.purchases, icon: 'purchases', show: isAdmin },
+      { to: '/admin/providers', label: t.ops.providers, icon: 'providers', show: isAdmin },
+      { to: '/admin/returns', label: t.ops.returns, icon: 'returns', show: isAdmin },
+      { to: '/admin/stock', label: t.ops.stock, icon: 'stock', show: isAdmin },
+    ] },
+    { label: t.ops.groupMoney, links: [
+      { to: '/admin/expenses', label: t.ops.expenses, icon: 'expenses', show: isAdmin },
+      { to: '/admin/finance', label: t.ops.finance, icon: 'finance', show: isAdmin },
+    ] },
+    { label: t.ops.groupCatalog, links: [
+      { to: '/admin/products', label: t.admin.products, icon: 'products', show: isAdmin },
+      { to: '/admin/categories', label: t.admin.categories, icon: 'categories', show: isAdmin },
+      { to: '/admin/import', label: t.admin.import, icon: 'import', show: isAdmin },
+    ] },
   ];
 
   return (
@@ -45,12 +68,21 @@ export default function AdminLayout() {
           <span className="pill">{t.admin.title}</span>
         </Link>
         <nav className="admin-nav" onClick={() => setOpen(false)}>
-          {links.filter((l) => l.show).map((l) => (
-            <NavLink key={l.to} to={l.to} end={l.end}>
-              <Icon name={l.icon} />
-              <span>{l.label}</span>
-            </NavLink>
-          ))}
+          {groups.map((g, gi) => {
+            const visible = g.links.filter((l) => l.show);
+            if (!visible.length) return null;
+            return (
+              <div key={gi} className="admin-nav-group">
+                {g.label && <div className="admin-nav-label">{g.label}</div>}
+                {visible.map((l) => (
+                  <NavLink key={l.to} to={l.to} end={l.end}>
+                    <Icon name={l.icon} />
+                    <span>{l.label}</span>
+                  </NavLink>
+                ))}
+              </div>
+            );
+          })}
         </nav>
         <div className="admin-sidebar-foot">
           <div className="small muted">{t.admin.signedInAs}</div>

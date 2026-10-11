@@ -14,6 +14,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Optional<Product> findFirstByNameIgnoreCase(String name);
 
+    Optional<Product> findBySkuIgnoreCase(String sku);
+
     long countByCategoryId(Long categoryId);
 
     List<Product> findByStockQuantityLessThanOrderByStockQuantityAsc(Integer threshold);

@@ -36,4 +36,9 @@ public class OrderItem {
     /** Unit price captured at the time of purchase. */
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal price;
+
+    /** Product cost per unit at the time of sale (for cost of goods sold). Internal. */
+    @JsonIgnore
+    @Column(precision = 12, scale = 4)
+    private BigDecimal unitCost;
 }

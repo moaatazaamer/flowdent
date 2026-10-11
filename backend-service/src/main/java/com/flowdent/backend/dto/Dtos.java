@@ -49,12 +49,16 @@ public final class Dtos {
     public record CategoryRequest(@NotBlank String name, String nameAr, String description,
                                   String descriptionAr, String imageUrl) {}
 
+    /** sku / costPrice / reorderLevel are optional: when null the stored value is kept. */
     public record ProductRequest(@NotBlank String name, String nameAr, String description,
                                  String descriptionAr,
                                  @NotNull @DecimalMin("0.00") BigDecimal price,
                                  String imageUrl,
                                  @Min(0) Integer stockQuantity,
-                                 Long categoryId) {}
+                                 Long categoryId,
+                                 String sku,
+                                 @DecimalMin("0.00") BigDecimal costPrice,
+                                 @Min(0) Integer reorderLevel) {}
 
     // ---------- Orders ----------
     public record OrderItemRequest(@NotNull Long productId, @NotNull @Min(1) Integer quantity) {}

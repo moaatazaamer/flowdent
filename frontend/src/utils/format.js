@@ -1,4 +1,5 @@
-let currency = 'USD';
+// The store works in Egyptian pounds; the backend can override via /api/payment/config.
+let currency = 'EGP';
 
 export function setCurrency(code) {
   if (code) currency = String(code).toUpperCase();
@@ -49,4 +50,24 @@ export const PLACEHOLDER_IMG =
 
 export function imgFallback(e) {
   if (e.currentTarget.src !== PLACEHOLDER_IMG) e.currentTarget.src = PLACEHOLDER_IMG;
+}
+
+/** Plain number with 2 decimals and no currency symbol (for dense tables). */
+export function formatAmount(value, lang = 'en') {
+  const n = Number(value ?? 0);
+  return new Intl.NumberFormat(locale(lang), { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+}
+
+/** Today's date as yyyy-mm-dd in the local time zone (for <input type="date">). */
+export function todayIso() {
+  const d = new Date();
+  const pad = (x) => String(x).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+/** First and last day of a yyyy-mm month string. */
+export function monthRange(ym) {
+  const [y, m] = ym.split('-').map(Number);
+  const last = new Date(y, m, 0).getDate();
+  return { from: `${ym}-01`, to: `${ym}-${String(last).padStart(2, '0')}` };
 }

@@ -13,4 +13,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findTop5ByOrderByCreatedAtDesc();
     long countByStatus(OrderStatus status);
     Optional<Order> findByPaymentIntentId(String paymentIntentId);
+    List<Order> findByClientIdOrderByCreatedAtDesc(Long clientId);
+    boolean existsByClientId(Long clientId);
+    boolean existsByItemsProductId(Long productId);
 }

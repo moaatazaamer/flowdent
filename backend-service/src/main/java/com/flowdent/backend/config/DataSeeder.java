@@ -1,12 +1,12 @@
 package com.flowdent.backend.config;
 
-import com.flowdent.backend.model.Category;
-import com.flowdent.backend.model.Product;
-import com.flowdent.backend.model.Role;
-import com.flowdent.backend.model.User;
+import com.flowdent.backend.model.*;
 import com.flowdent.backend.repository.CategoryRepository;
+import com.flowdent.backend.repository.ClientRepository;
 import com.flowdent.backend.repository.ProductRepository;
+import com.flowdent.backend.repository.SupplierRepository;
 import com.flowdent.backend.repository.UserRepository;
+import com.flowdent.backend.service.StockService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -15,6 +15,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @Component
@@ -39,6 +42,12 @@ public class DataSeeder implements CommandLineRunner {
     private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
     private final PasswordEncoder passwordEncoder;
+    private final SupplierRepository supplierRepository;
+    private final ClientRepository clientRepository;
+    private final StockService stockService;
+
+    /** Running number per category prefix, for generated SKUs. */
+    private final Map<String, Integer> skuCounters = new HashMap<>();
 
     @Override
     @Transactional
@@ -46,7 +55,35 @@ public class DataSeeder implements CommandLineRunner {
         seedUser("admin", "admin", "Store Administrator", Role.ADMIN);
         seedUser("orderadmin", "orderadmin", "Order Administrator", Role.ORDER_ADMIN);
 
-        if (categoryRepository.count() > 0) return;
+        if (categoryRepository.count() == 0) seedCatalog();
+        if (supplierRepository.count() == 0 && clientRepository.count() == 0) seedContacts();
+    }
+
+    /** Example providers and clients so the Operations screens are not empty on first run. */
+    private void seedContacts() {
+        log.info("Seeding example providers and clients...");
+        supplierRepository.save(Supplier.builder().name("Nile Dental Supplies").contactName("Ahmed Fathy")
+                .phone("+20 2 2345 6789").email("sales@niledental.example").address("Abbas El Akkad St, Nasr City, Cairo")
+                .notes("Gloves and disposables. 30 days credit.").build());
+        supplierRepository.save(Supplier.builder().name("Delta Medical Import").contactName("Mona Adel")
+                .phone("+20 3 4567 8901").email("orders@deltamedical.example").address("Smouha, Alexandria")
+                .notes("Endodontics and restoratives, imported.").build());
+        supplierRepository.save(Supplier.builder().name("Cairo Instruments Co.").contactName("Karim Hassan")
+                .phone("+20 10 1234 5678").address("Downtown, Cairo").notes("Hand instruments.").build());
+
+        clientRepository.save(Client.builder().name("Smile Dental Clinic").type(ClientType.CLINIC)
+                .contactName("Dr. Sara Mahmoud").phone("+20 100 111 2233").city("Cairo")
+                .address("12 Mostafa El Nahas St, Nasr City").build());
+        clientRepository.save(Client.builder().name("Dr. Omar Khaled").type(ClientType.DOCTOR)
+                .phone("+20 122 333 4455").city("Giza").address("Mohandessin").build());
+        clientRepository.save(Client.builder().name("Alex Ortho Center").type(ClientType.CLINIC)
+                .contactName("Dr. Hany Samir").phone("+20 111 555 6677").city("Alexandria")
+                .address("Fouad St, Alexandria").build());
+        clientRepository.save(Client.builder().name("Precision Dental Lab").type(ClientType.LAB)
+                .contactName("Eng. Youssef Ali").phone("+20 155 777 8899").city("Cairo").build());
+    }
+
+    private void seedCatalog() {
         log.info("Seeding Flowdent catalog...");
 
         Category gloves = cat("Gloves", "القفازات",
@@ -199,10 +236,23 @@ public class DataSeeder implements CommandLineRunner {
                 .name(name).nameAr(nameAr).description(desc).descriptionAr(descAr).imageUrl(img).build());
     }
 
+    /**
+     * Seed prices are written in USD for readability and converted to EGP here
+     * (×50, rounded to 5 EGP). Cost price is set to ~60% of the selling price.
+     */
     private void prod(Category c, String name, String nameAr, String desc, String descAr,
-                      String price, int stock, String img) {
-        productRepository.save(Product.builder()
+                      String usdPrice, int stock, String img) {
+        BigDecimal egp = new BigDecimal(usdPrice).multiply(BigDecimal.valueOf(50))
+                .divide(BigDecimal.valueOf(5), 0, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(5))
+                .setScale(2, RoundingMode.HALF_UP);
+        BigDecimal cost = egp.multiply(new BigDecimal("0.60")).setScale(2, RoundingMode.HALF_UP);
+        String prefix = c.getName().replaceAll("[^A-Za-z]", "").substring(0, 3).toUpperCase();
+        int n = skuCounters.merge(prefix, 1, Integer::sum);
+        Product p = productRepository.save(Product.builder()
                 .name(name).nameAr(nameAr).description(desc).descriptionAr(descAr)
-                .price(new BigDecimal(price)).stockQuantity(stock).imageUrl(img).category(c).build());
+                .price(egp).stockQuantity(0).imageUrl(img).category(c)
+                .sku(String.format("%s-%03d", prefix, n)).costPrice(cost).reorderLevel(10)
+                .build());
+        stockService.change(p, StockMovementType.INITIAL, stock, cost, "Opening stock", null);
     }
 }

@@ -87,8 +87,10 @@ public class AdminController {
         res.put("ordersByPaymentMethod", byPayment);
         res.put("dailyStats", daily);
         res.put("topProducts", topProducts);
-        res.put("lowStockProducts", productRepository.findByStockQuantityLessThanOrderByStockQuantityAsc(10)
-                .stream().limit(8).toList());
+        res.put("lowStockProducts", productRepository.findAll().stream()
+                .filter(p -> p.getStockQuantity() <= p.reorderLevelOrDefault())
+                .sorted(java.util.Comparator.comparing(Product::getStockQuantity))
+                .limit(8).toList());
         res.put("recentOrders", orderRepository.findTop5ByOrderByCreatedAtDesc());
         return res;
     }

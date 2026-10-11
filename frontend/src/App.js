@@ -25,8 +25,14 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminCategories from './pages/admin/AdminCategories';
 import AdminProducts from './pages/admin/AdminProducts';
 import AdminOrders from './pages/admin/AdminOrders';
-import AdminCustomers from './pages/admin/AdminCustomers';
 import AdminImport from './pages/admin/AdminImport';
+import AdminClients from './pages/admin/ops/AdminClients';
+import AdminProviders from './pages/admin/ops/AdminProviders';
+import AdminPurchases from './pages/admin/ops/AdminPurchases';
+import AdminReturns from './pages/admin/ops/AdminReturns';
+import AdminStock from './pages/admin/ops/AdminStock';
+import AdminExpenses from './pages/admin/ops/AdminExpenses';
+import AdminFinance from './pages/admin/ops/AdminFinance';
 
 function Shop({ children }) {
   return (
@@ -96,7 +102,14 @@ export default function App() {
                 <Route path="categories" element={<RequireAdmin><AdminCategories /></RequireAdmin>} />
                 <Route path="products" element={<RequireAdmin><AdminProducts /></RequireAdmin>} />
                 <Route path="orders" element={<AdminOrders />} />
-                <Route path="customers" element={<RequireAdmin><AdminCustomers /></RequireAdmin>} />
+                <Route path="clients" element={<RequireAdmin><AdminClients /></RequireAdmin>} />
+                <Route path="providers" element={<RequireAdmin><AdminProviders /></RequireAdmin>} />
+                <Route path="purchases" element={<RequireAdmin><AdminPurchases /></RequireAdmin>} />
+                <Route path="returns" element={<RequireAdmin><AdminReturns /></RequireAdmin>} />
+                <Route path="stock" element={<RequireAdmin><AdminStock /></RequireAdmin>} />
+                <Route path="expenses" element={<RequireAdmin><AdminExpenses /></RequireAdmin>} />
+                <Route path="finance" element={<RequireAdmin><AdminFinance /></RequireAdmin>} />
+                <Route path="customers" element={<Navigate to="/admin/clients" replace />} />
                 <Route path="import" element={<RequireAdmin><AdminImport /></RequireAdmin>} />
               </Route>
 

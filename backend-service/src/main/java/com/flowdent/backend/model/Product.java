@@ -1,5 +1,6 @@
 package com.flowdent.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
@@ -44,4 +45,28 @@ public class Product {
     @JoinColumn(name = "category_id")
     @JsonIgnoreProperties({"products", "hibernateLazyInitializer", "handler"})
     private Category category;
+
+    /** Internal stock-keeping code. */
+    @Column(unique = true, length = 64)
+    private String sku;
+
+    /**
+     * Weighted-average landed cost per unit, in the store currency.
+     * Internal: never serialised on public endpoints (see admin inventory API).
+     */
+    @JsonIgnore
+    @Column(precision = 12, scale = 4)
+    private BigDecimal costPrice;
+
+    /** Minimum stock level before the product is flagged for reordering. Internal. */
+    @JsonIgnore
+    private Integer reorderLevel;
+
+    public BigDecimal costOrZero() {
+        return costPrice == null ? BigDecimal.ZERO : costPrice;
+    }
+
+    public int reorderLevelOrDefault() {
+        return reorderLevel == null ? 10 : reorderLevel;
+    }
 }

@@ -1,6 +1,6 @@
 # Flowdent — Dental Supplies Store
 
-Full-stack e-commerce app for dental supplies with a bilingual **English / Arabic (RTL)** storefront and an admin panel.
+Full-stack B2B e-commerce and back-office app for a dental supplies business: a bilingual **English / Arabic (RTL)** storefront, plus an admin panel that tracks clients (clinics and doctors), providers, purchases, returns, stock, expenses and profit. All money is in **Egyptian pounds (EGP)**.
 
 | Module | Tech | Port |
 |---|---|---|
@@ -34,7 +34,7 @@ See [`.env.example`](.env.example) for the full list.
 | `JWT_EXPIRATION` | Token lifetime in ms | `86400000` (24h) |
 | `STRIPE_SECRET_KEY` | Stripe **test** secret key | `sk_test_placeholder` |
 | `STRIPE_PUBLISHABLE_KEY` | Stripe **test** publishable key | `pk_test_placeholder` |
-| `STRIPE_CURRENCY` | Currency for prices & payments | `usd` |
+| `STRIPE_CURRENCY` | Currency for prices & payments | `egp` |
 | `UPLOAD_DIR` | Folder for uploaded product images | `uploads` |
 
 With the placeholder Stripe keys the app runs normally; the "Pay online by card" option is simply
@@ -69,8 +69,8 @@ Give the gateway ~30 seconds after the backend registers before the first reques
 | `orderadmin` | `orderadmin` | ORDER_ADMIN | Dashboard + orders only |
 
 **Change these passwords before any non-local deployment.**
-On first start the seeder also creates 8 dental categories and 31 products with English and Arabic
-names/descriptions. Seed images are Unsplash URLs; if any fail to load, a placeholder is shown and
+On first start the seeder also creates 8 dental categories and 31 products (English and Arabic
+names/descriptions, EGP prices, cost prices, SKUs and opening stock), 3 example providers and 4 example clients. Seed images are Unsplash URLs; if any fail to load, a placeholder is shown and
 you can replace them from the admin panel.
 
 ## Features
@@ -83,12 +83,29 @@ you can replace them from the admin panel.
 - Checkout as guest or signed-in user: home delivery or shop pickup; pay online (Stripe), cash on delivery, or card machine (POS) on delivery.
 - Order history and profile with saved addresses (default address pre-fills checkout).
 
+**Operations / back office** (`/admin`, ADMIN role, all amounts in EGP)
+- **Clients (buyers):** clinics, doctors, labs and hospitals added by staff (no online account needed). Each client has an account page with orders, payments received, returns and the **balance they owe**. Online orders attach to the matching client automatically (by account, email or phone).
+- **Sales entered by staff:** phone / WhatsApp orders with per-line special prices, payment on account (pay later), cash, card machine or bank transfer, and an optional amount received now. Stock is deducted immediately.
+- **Providers (sellers):** contacts, purchases, payments made, returns and the **balance you owe** each provider.
+- **Purchases:** goods bought from a provider with extra costs (shipping, customs, other). On receipt, stock is added and extra costs are spread over the items by value, so each product's cost price is its true landed cost (weighted average).
+- **Returns:** from a client (refund as credit or cash; optionally back into stock) and to a provider (stock removed; credit or cash back).
+- **Stock:** quantity, reorder level, quantity on order, cost, margin and stock value per product; quick adjustments, write-offs and stock counts; full history of every stock change (sales, purchases, returns, adjustments).
+- **Expenses:** rent, salaries, transport, etc. by month and category.
+- **Finance summary:** for any period — sales, returns, cost of goods, gross profit, expenses, write-offs, net profit, money in / out, extra purchase costs, profit by category, a 12-month view, plus what clients owe you, what you owe providers and current stock value.
+
 **Admin panel** (`/admin`)
 - Dashboard: revenue, orders, customers, 14-day revenue chart, orders by status, payment mix, top products, low stock, recent orders.
 - CRUD for categories and products with image upload (≤ 5 MB, stored in `uploads/`).
 - Orders list with status updates. Statuses offered match the delivery method; cancelling restores stock; pay-on-receipt orders are marked paid when delivered / picked up.
-- Customers list with order count and total spent.
 - Excel import (`.xlsx`) for categories and products, downloadable templates, and export of current data. Rows are matched by English name (update if it exists, create otherwise).
+
+### How balances and profit are calculated
+
+- **Client owes** = sales (not cancelled) − payments received − returns settled as credit.
+- **You owe a provider** = goods received − payments made − returns settled as credit.
+- **Net profit** = sales − client returns − cost of goods sold − expenses − write-offs.
+  Cost of goods uses each item's cost at the moment of sale; extra purchase costs are already inside it,
+  so don't also enter purchase shipping or customs as expenses.
 
 ## REST API (all under `/api`)
 
@@ -106,6 +123,13 @@ you can replace them from the admin panel.
 | Images | `POST /images/upload` (ADMIN), `GET /images/{filename}` (public) | |
 | Admin | `GET /admin/dashboard`, `GET /admin/orders`, `PUT /admin/orders/{id}/status` | ADMIN, ORDER_ADMIN |
 | | `GET /admin/customers` | ADMIN |
+| Clients | `GET/POST /admin/clients`, `GET/PUT/DELETE /admin/clients/{id}`, `POST /admin/clients/sales`, `GET/POST /admin/clients/payments`, `DELETE /admin/clients/payments/{id}` | ADMIN |
+| Providers | `GET/POST /admin/suppliers`, `GET/PUT/DELETE /admin/suppliers/{id}`, `GET/POST /admin/suppliers/payments`, `DELETE /admin/suppliers/payments/{id}` | ADMIN |
+| Purchases | `GET/POST /admin/purchases`, `GET/PUT /admin/purchases/{id}`, `POST /admin/purchases/{id}/receive`, `POST /admin/purchases/{id}/cancel` | ADMIN |
+| Returns | `GET/POST /admin/returns` | ADMIN |
+| Stock | `GET /admin/stock`, `GET /admin/stock/movements`, `POST /admin/stock/adjust`, `POST /admin/stock/count` | ADMIN |
+| Expenses | `GET/POST /admin/expenses`, `PUT/DELETE /admin/expenses/{id}` | ADMIN |
+| Finance | `GET /admin/finance/summary?from=&to=`, `GET /admin/finance/monthly?months=12` | ADMIN |
 | Excel | `POST /admin/import/products`, `POST /admin/import/categories`, `GET /admin/import/template/{products,categories}`, `GET /admin/import/export/{products,categories}` | ADMIN |
 
 ### Online payment flow

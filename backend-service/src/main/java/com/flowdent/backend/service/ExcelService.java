@@ -4,6 +4,7 @@ import com.flowdent.backend.dto.Dtos.ImportResult;
 import com.flowdent.backend.exception.ApiException;
 import com.flowdent.backend.model.Category;
 import com.flowdent.backend.model.Product;
+import com.flowdent.backend.model.StockMovementType;
 import com.flowdent.backend.repository.CategoryRepository;
 import com.flowdent.backend.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -32,10 +33,12 @@ public class ExcelService {
     public static final String[] CATEGORY_HEADERS =
             {"name", "nameAr", "description", "descriptionAr", "imageUrl"};
     public static final String[] PRODUCT_HEADERS =
-            {"name", "nameAr", "description", "descriptionAr", "price", "stockQuantity", "categoryName", "imageUrl"};
+            {"name", "nameAr", "description", "descriptionAr", "price", "stockQuantity", "categoryName", "imageUrl",
+             "sku", "costPrice", "reorderLevel"};
 
     private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
+    private final StockService stockService;
     private final DataFormatter formatter = new DataFormatter();
 
     // ------------------------------------------------------------------ import
@@ -113,19 +116,62 @@ public class ExcelService {
                         continue;
                     }
                 }
-                Product p = productRepository.findFirstByNameIgnoreCase(name).orElse(null);
+                BigDecimal cost = null;
+                String costStr = str(row, 9);
+                if (!costStr.isEmpty()) {
+                    try {
+                        cost = new BigDecimal(costStr.replace(",", ""));
+                        if (cost.signum() < 0) throw new NumberFormatException();
+                    } catch (NumberFormatException ex) {
+                        errors.add("Row " + line + ": invalid costPrice '" + costStr + "'");
+                        continue;
+                    }
+                }
+                Integer reorder = null;
+                String reorderStr = str(row, 10);
+                if (!reorderStr.isEmpty()) {
+                    try {
+                        reorder = new BigDecimal(reorderStr).intValueExact();
+                        if (reorder < 0) throw new NumberFormatException();
+                    } catch (NumberFormatException | ArithmeticException ex) {
+                        errors.add("Row " + line + ": invalid reorderLevel '" + reorderStr + "'");
+                        continue;
+                    }
+                }
+                String sku = str(row, 8);
+                Product p = sku.isEmpty() ? null : productRepository.findBySkuIgnoreCase(sku).orElse(null);
+                if (p == null) p = productRepository.findFirstByNameIgnoreCase(name).orElse(null);
                 boolean isNew = p == null;
-                if (isNew) p = new Product();
+                if (isNew) {
+                    p = new Product();
+                    p.setStockQuantity(0);
+                }
+                if (!sku.isEmpty()) {
+                    final Long selfId = p.getId();
+                    var clash = productRepository.findBySkuIgnoreCase(sku)
+                            .filter(o -> !o.getId().equals(selfId));
+                    if (clash.isPresent()) {
+                        errors.add("Row " + line + ": SKU '" + sku + "' is already used by another product");
+                        continue;
+                    }
+                    p.setSku(sku);
+                }
+                if (cost != null) p.setCostPrice(cost);
+                if (reorder != null) p.setReorderLevel(reorder);
                 p.setName(name);
                 p.setNameAr(nullIfEmpty(str(row, 1)));
                 p.setDescription(nullIfEmpty(str(row, 2)));
                 p.setDescriptionAr(nullIfEmpty(str(row, 3)));
                 p.setPrice(price);
-                p.setStockQuantity(stock);
                 p.setCategory(category);
                 String img = str(row, 7);
                 if (!img.isEmpty() || isNew) p.setImageUrl(nullIfEmpty(img));
-                productRepository.save(p);
+                Product saved = productRepository.save(p);
+                // An empty stock cell leaves the current quantity unchanged.
+                if (isNew || !str(row, 5).isEmpty()) {
+                    stockService.setTo(saved, stock, isNew ? StockMovementType.INITIAL : StockMovementType.ADJUSTMENT,
+                            "Excel import", null);
+                }
                 if (isNew) created++; else updated++;
             }
         } catch (IOException e) {
@@ -145,7 +191,7 @@ public class ExcelService {
         return build("Products", PRODUCT_HEADERS, List.<Object[]>of(new Object[]{
                 "Nitrile Gloves - Medium (100)", "قفازات نتريل - مقاس متوسط (100)",
                 "Powder-free nitrile examination gloves", "قفازات فحص نتريل خالية من البودرة",
-                12.50, 100, "Gloves", ""}));
+                450, 100, "Gloves", "", "GLV-NIT-M", 300, 20}));
     }
 
     public byte[] exportCategories() {
@@ -159,7 +205,8 @@ public class ExcelService {
         List<Object[]> rows = productRepository.findAll(Sort.by("id")).stream()
                 .map(p -> new Object[]{p.getName(), p.getNameAr(), p.getDescription(), p.getDescriptionAr(),
                         p.getPrice(), p.getStockQuantity(),
-                        p.getCategory() != null ? p.getCategory().getName() : "", p.getImageUrl()})
+                        p.getCategory() != null ? p.getCategory().getName() : "", p.getImageUrl(),
+                        p.getSku(), p.getCostPrice(), p.getReorderLevel()})
                 .toList();
         return build("Products", PRODUCT_HEADERS, rows);
     }

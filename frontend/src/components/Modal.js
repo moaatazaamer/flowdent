@@ -1,24 +1,31 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useLang } from '../context/LangContext';
 
 export default function Modal({ open, title, onClose, children, footer, wide = false }) {
   const { t } = useLang();
+  const ref = useRef(null);
 
   useEffect(() => {
     if (!open) return undefined;
-    const onKey = (e) => e.key === 'Escape' && onClose?.();
+    // Only the top-most modal reacts to Escape (modals can be stacked).
+    const onKey = (e) => {
+      if (e.key !== 'Escape') return;
+      const all = document.querySelectorAll('.modal-backdrop');
+      if (all[all.length - 1] === ref.current) onClose?.();
+    };
     document.addEventListener('keydown', onKey);
-    document.body.style.overflow = 'hidden';
+    document.body.classList.add('modal-open');
     return () => {
       document.removeEventListener('keydown', onKey);
-      document.body.style.overflow = '';
+      if (document.querySelectorAll('.modal-backdrop').length === 0) document.body.classList.remove('modal-open');
     };
   }, [open, onClose]);
 
   if (!open) return null;
 
-  return (
-    <div className="modal-backdrop" onMouseDown={(e) => e.target === e.currentTarget && onClose?.()}>
+  return createPortal(
+    <div ref={ref} className="modal-backdrop" onMouseDown={(e) => e.target === e.currentTarget && onClose?.()}>
       <div className={`modal ${wide ? 'modal-wide' : ''}`} role="dialog" aria-modal="true" aria-label={title}>
         <div className="modal-header">
           <h3>{title}</h3>
@@ -31,6 +38,7 @@ export default function Modal({ open, title, onClose, children, footer, wide = f
         <div className="modal-body">{children}</div>
         {footer && <div className="modal-footer">{footer}</div>}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

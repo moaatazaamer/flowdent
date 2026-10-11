@@ -28,6 +28,19 @@ public class Order {
     @JsonIgnoreProperties({"password", "hibernateLazyInitializer", "handler"})
     private User user;
 
+    /** The B2B client (clinic / doctor) this sale belongs to. */
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "client_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "notes"})
+    private Client client;
+
+    /** True when the sale was entered by staff in the admin panel (phone / WhatsApp orders). */
+    @Builder.Default
+    private Boolean createdByAdmin = false;
+
+    @Column(length = 1000)
+    private String notes;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     @Builder.Default

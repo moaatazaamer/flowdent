@@ -40,7 +40,7 @@ stripe:
   # Use Stripe TEST keys via environment variables. Placeholders keep the app bootable.
   secret-key: ${STRIPE_SECRET_KEY:sk_test_placeholder}
   publishable-key: ${STRIPE_PUBLISHABLE_KEY:pk_test_placeholder}
-  currency: ${STRIPE_CURRENCY:usd}
+  currency: ${STRIPE_CURRENCY:egp}
 
 app:
   upload-dir: ${UPLOAD_DIR:uploads}

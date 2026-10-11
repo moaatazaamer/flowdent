@@ -4,6 +4,8 @@ import { useLang } from '../../context/LangContext';
 import Modal from '../../components/Modal';
 import StatusBadge from '../../components/StatusBadge';
 import { formatDate, formatPrice, localized } from '../../utils/format';
+import { useAuth } from '../../context/AuthContext';
+import { SaleForm } from './ops/shared';
 
 const DELIVERY_STATUSES = ['PENDING', 'CONFIRMED', 'SHIPPED', 'DELIVERED', 'CANCELLED'];
 const PICKUP_STATUSES = ['PENDING', 'CONFIRMED', 'READY_FOR_PICKUP', 'PICKED_UP', 'CANCELLED'];
@@ -15,6 +17,8 @@ function statusesFor(order) {
 
 export default function AdminOrders() {
   const { t, lang } = useLang();
+  const { isAdmin } = useAuth();
+  const [selling, setSelling] = useState(false);
   const [orders, setOrders] = useState([]);
   const [statusFilter, setStatusFilter] = useState('');
   const [q, setQ] = useState('');
@@ -39,7 +43,7 @@ export default function AdminOrders() {
       if (statusFilter && o.status !== statusFilter) return false;
       if (!term) return true;
       const cd = o.customerDetails || {};
-      return [String(o.id), cd.fullName, cd.email, cd.phone].some((v) => (v || '').toLowerCase().includes(term));
+      return [String(o.id), cd.fullName, cd.email, cd.phone, o.client?.name].some((v) => (v || '').toLowerCase().includes(term));
     });
   }, [orders, statusFilter, q]);
 
@@ -60,7 +64,12 @@ export default function AdminOrders() {
     <div className="admin-page">
       <div className="page-head">
         <h1>{t.admin.orders}</h1>
+        {isAdmin && <button className="btn btn-primary" onClick={() => setSelling(true)}>+ {t.ops.newSale}</button>}
       </div>
+      {isAdmin && (
+        <SaleForm open={selling} onClose={() => setSelling(false)}
+          onSaved={(o) => { load(); setToast(t.ops.saleSaved(o.id)); setTimeout(() => setToast(''), 2500); }} />
+      )}
       <div className="toolbar">
         <input type="search" placeholder={t.admin.filter} value={q} onChange={(e) => setQ(e.target.value)} />
         <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
@@ -91,8 +100,11 @@ export default function AdminOrders() {
                 <td><strong>{o.id}</strong></td>
                 <td className="nowrap">{formatDate(o.createdAt, lang, true)}</td>
                 <td>
-                  {o.customerDetails?.fullName || '—'}
-                  <div className="small muted">{o.user ? o.user.email : t.admin.guest}</div>
+                  {o.client?.name || o.customerDetails?.fullName || '—'}
+                  <div className="small muted">
+                    {o.createdByAdmin ? t.ops.staffSale : o.user ? o.user.email : t.admin.guest}
+                    {o.client && o.customerDetails?.phone ? ` · ${o.customerDetails.phone}` : ''}
+                  </div>
                 </td>
                 <td>{t.deliveryMethod[o.deliveryMethod]}</td>
                 <td>
