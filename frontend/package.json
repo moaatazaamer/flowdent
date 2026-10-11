@@ -25,7 +25,8 @@
   },
   "jest": {
     "moduleNameMapper": {
-      "^axios$": "axios/dist/node/axios.cjs"
+      "^axios$": "axios/dist/node/axios.cjs",
+      "^react-router/dom$": "<rootDir>/node_modules/react-router/dist/development/dom-export.js"
     }
   },
   "eslintConfig": {
