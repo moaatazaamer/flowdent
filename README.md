@@ -107,6 +107,23 @@ you can replace them from the admin panel.
   Cost of goods uses each item's cost at the moment of sale; extra purchase costs are already inside it,
   so don't also enter purchase shipping or customs as expenses.
 
+## Tests
+
+Both suites run automatically on GitHub (Actions → **Tests**) for every push and pull request.
+
+### Backend — `cd backend-service && mvn test`
+No MySQL needed: tests use an in-memory H2 database (`src/test/resources/application-test.yml`).
+
+| Kind | What is covered |
+|---|---|
+| Unit (JUnit 5 + Mockito) | Stock ledger (never below zero, weighted-average cost), purchases (extra costs spread into landed cost, receive/cancel rules), orders and staff sales (DB prices, special prices, partial payment, cancel restores stock, COD settles on delivery), returns, client/provider balances, finance figures, JWT |
+| Scenario (Spring Boot + MockMvc) | Full B2B cycle through the REST API — buy with shipping/customs → sell on credit → collect → client return → return to provider → expense → stock, balances and profit add up; purchase lifecycle; stock adjustments; guest checkout; roles and security; Excel import |
+
+### Frontend — `cd frontend && npm test` (or `npm run test:ci` for a single run)
+Jest + React Testing Library: formatting (EGP), English/Arabic translations, cart and language (RTL) contexts,
+product card, login, guest checkout, and the operations screens (clients and payments, sales, purchases,
+returns, stock, finance) plus role-based routing.
+
 ## REST API (all under `/api`)
 
 | Area | Endpoints | Access |
