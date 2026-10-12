@@ -27,6 +27,7 @@ describe('Home page', () => {
     expect(within(strip).getByText('01000709694')).toHaveAttribute('href', 'tel:+201000709694');
     expect(within(strip).getByText('01030044554')).toHaveAttribute('href', 'tel:+201030044554');
     expect(within(strip).getByText(COMPANY.email).closest('a')).toHaveAttribute('href', 'mailto:Flow.dent92@yahoo.com');
+    await screen.findByText(en.home.oraTitle);   // catalogue loaded
   });
 
   test('Ora section lists in-stock Ora products only', async () => {

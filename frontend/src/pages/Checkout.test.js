@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import Checkout from './Checkout';
 import en from '../i18n/en';
 import { apiError, mockApi, renderWithProviders } from '../test-utils';
@@ -99,9 +99,10 @@ describe('Checkout (guest)', () => {
     await waitFor(() => expect(screen.getByText(en.checkout.placeOrder)).toBeEnabled());
   });
 
-  test('an empty cart cannot be checked out', () => {
+  test('an empty cart cannot be checked out', async () => {
     mockApi({ get: { '/payment/config': { enabled: false } } });
     renderWithProviders(<Checkout />);
+    await act(async () => {});   // let the payment config request settle
     expect(screen.getByText(en.checkout.emptyCart)).toBeInTheDocument();
     expect(screen.queryByText(en.checkout.placeOrder)).not.toBeInTheDocument();
   });
