@@ -46,6 +46,10 @@ public class Product {
     @JsonIgnoreProperties({"products", "hibernateLazyInitializer", "handler"})
     private Category category;
 
+    /** Product brand shown in the shop, e.g. "Ora" (Flow Dent is Ora's exclusive agent). */
+    @Column(length = 80)
+    private String brand;
+
     /** Internal stock-keeping code. */
     @Column(unique = true, length = 64)
     private String sku;

@@ -4,6 +4,7 @@ import api from '../api';
 import { useLang } from '../context/LangContext';
 import { useCart } from '../context/CartContext';
 import { formatPrice, imgFallback, localized, PLACEHOLDER_IMG } from '../utils/format';
+import { BrandBadge } from '../components/Logo';
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -56,7 +57,10 @@ export default function ProductDetail() {
           <img src={product.imageUrl || PLACEHOLDER_IMG} alt={localized(product, 'name', lang)} onError={imgFallback} />
         </div>
         <div className="detail-info">
-          {product.category && <span className="eyebrow">{localized(product.category, 'name', lang)}</span>}
+          <div className="detail-meta">
+            {product.category && <span className="product-category">{localized(product.category, 'name', lang)}</span>}
+            <BrandBadge brand={product.brand} />
+          </div>
           <h1>{localized(product, 'name', lang)}</h1>
           <div className="detail-price">{formatPrice(product.price, lang)}</div>
           <div className={`stock ${out ? 'stock-out' : product.stockQuantity < 10 ? 'stock-low' : 'stock-ok'}`}>

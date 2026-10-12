@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useLang } from '../context/LangContext';
 import { useCart } from '../context/CartContext';
 import { formatPrice, imgFallback, localized, PLACEHOLDER_IMG } from '../utils/format';
+import { BrandBadge } from './Logo';
 
 export default function ProductCard({ product }) {
   const { t, lang } = useLang();
@@ -21,9 +22,10 @@ export default function ProductCard({ product }) {
       <Link to={`/products/${product.id}`} className="product-media">
         <img src={product.imageUrl || PLACEHOLDER_IMG} alt="" loading="lazy" onError={imgFallback} />
         {out && <span className="ribbon">{t.products.outOfStock}</span>}
+        <BrandBadge brand={product.brand} className="on-media" />
       </Link>
       <div className="product-body">
-        {product.category && <span className="eyebrow">{localized(product.category, 'name', lang)}</span>}
+        {product.category && <span className="product-category">{localized(product.category, 'name', lang)}</span>}
         <Link to={`/products/${product.id}`} className="product-title">
           {localized(product, 'name', lang)}
         </Link>

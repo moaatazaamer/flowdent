@@ -33,6 +33,17 @@ describe('ProductCard', () => {
     expect(screen.getByText('مواد الترميم')).toBeInTheDocument();
   });
 
+  test('Ora products carry the Ora logo badge; other brands show their name', () => {
+    renderWithProviders(<>
+      <ProductCard product={{ ...product, brand: 'Ora' }} />
+      <ProductCard product={{ ...product, id: 8, name: 'Other bond', brand: 'Acme' }} />
+      <ProductCard product={{ ...product, id: 9, name: 'No brand', brand: null }} />
+    </>);
+    expect(screen.getByAltText('Ora')).toBeInTheDocument();
+    expect(screen.getByText('Acme')).toHaveClass('brand-badge');
+    expect(document.querySelectorAll('.brand-badge')).toHaveLength(2);
+  });
+
   test('out-of-stock products cannot be added', () => {
     renderWithProviders(<><ProductCard product={{ ...product, stockQuantity: 0 }} /><CartCount /></>);
     expect(screen.getByText('Out of stock')).toBeInTheDocument();

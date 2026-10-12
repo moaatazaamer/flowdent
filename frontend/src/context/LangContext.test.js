@@ -18,7 +18,7 @@ describe('LangContext', () => {
 
     expect(result.current.lang).toBe('ar');
     expect(result.current.isRtl).toBe(true);
-    expect(result.current.t.brand).toBe('فلودنت');
+    expect(result.current.t.brand).toBe('فلو دنت');
     expect(document.documentElement.getAttribute('dir')).toBe('rtl');
     expect(document.documentElement.getAttribute('lang')).toBe('ar');
     expect(localStorage.getItem('flowdent_lang')).toBe('ar');

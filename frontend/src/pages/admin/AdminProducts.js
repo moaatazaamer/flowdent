@@ -8,7 +8,7 @@ import { formatPrice, imgFallback, localized, PLACEHOLDER_IMG } from '../../util
 const EMPTY = {
   name: '', nameAr: '', description: '', descriptionAr: '',
   price: '', stockQuantity: 0, imageUrl: '', categoryId: '',
-  sku: '', costPrice: '', reorderLevel: 10,
+  sku: '', costPrice: '', reorderLevel: 10, brand: '',
 };
 
 export default function AdminProducts() {
@@ -54,7 +54,7 @@ export default function AdminProducts() {
     setError('');
     setEditing(
       p
-        ? { ...EMPTY, ...p, sku: p.sku || '', costPrice: p.costPrice ?? '',
+        ? { ...EMPTY, ...p, sku: p.sku || '', brand: p.brand || '', costPrice: p.costPrice ?? '',
             categoryId: p.category?.id ? String(p.category.id) : '' }
         : { ...EMPTY, categoryId: catFilter }
     );
@@ -74,6 +74,7 @@ export default function AdminProducts() {
       imageUrl: editing.imageUrl,
       categoryId: editing.categoryId ? Number(editing.categoryId) : null,
       sku: editing.sku || '',
+      brand: editing.brand || '',
       costPrice: editing.costPrice === '' || editing.costPrice == null ? null : Number(editing.costPrice),
       reorderLevel: editing.reorderLevel === '' ? null : Number(editing.reorderLevel),
     };
@@ -139,7 +140,7 @@ export default function AdminProducts() {
                 <td>
                   <strong>{p.name}</strong>
                   <div className="small muted" dir="rtl" lang="ar">{p.nameAr}</div>
-                  {p.sku && <div className="small muted">{p.sku}</div>}
+                  {(p.sku || p.brand) && <div className="small muted">{[p.sku, p.brand].filter(Boolean).join(' · ')}</div>}
                 </td>
                 <td>{p.category ? localized(p.category, 'name', lang) : '—'}</td>
                 <td className="num">{p.costPrice != null ? formatPrice(p.costPrice, lang) : '—'}</td>
@@ -192,6 +193,13 @@ export default function AdminProducts() {
               <label className="field">
                 <span>{t.ops.sku}</span>
                 <input dir="ltr" value={editing.sku} onChange={set('sku')} />
+              </label>
+              <label className="field">
+                <span>{t.admin.brand}</span>
+                <input dir="ltr" list="product-brands" placeholder={t.admin.brandHint} value={editing.brand} onChange={set('brand')} />
+                <datalist id="product-brands">
+                  {[...new Set(['Ora', ...products.map((x) => x.brand).filter(Boolean)])].map((b) => <option key={b} value={b} />)}
+                </datalist>
               </label>
               <label className="field">
                 <span>{t.admin.stock}</span>

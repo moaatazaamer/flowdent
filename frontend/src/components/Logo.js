@@ -1,12 +1,50 @@
-export default function Logo({ size = 32 }) {
+import { brandAsset } from '../config/company';
+
+/**
+ * Flow Dent logo lockup: tooth mark + "flow dent" wordmark (from the company logo).
+ * variant="white" is for dark backgrounds; wordmark={false} shows the tooth only.
+ */
+export default function Logo({ size = 40, variant = 'color', wordmark = true }) {
+  const suffix = variant === 'white' ? '-white' : '';
   return (
-    <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true" className="logo">
-      <rect width="64" height="64" rx="16" fill="var(--brand)" />
-      <path
-        d="M20 18c6-4 10 0 12 0s6-4 12 0c5 4 2 14 0 18-2 5-2 12-5 12-4 0-3-10-7-10s-3 10-7 10c-3 0-3-7-5-12-2-4-5-14 0-18z"
-        fill="#fff"
+    <span className="logo-lockup">
+      <img
+        className="logo-mark"
+        src={brandAsset(`flowdent-mark${suffix}.png`)}
+        alt={wordmark ? '' : 'Flow Dent'}
+        style={{ height: size }}
       />
-      <path d="M14 50c10-5 26-5 36 0" stroke="var(--accent)" strokeWidth="4" strokeLinecap="round" fill="none" />
-    </svg>
+      {wordmark && (
+        <img
+          className="logo-word"
+          src={brandAsset(`flowdent-wordmark${suffix}.png`)}
+          alt="Flow Dent"
+          style={{ height: Math.round(size * 0.5) }}
+        />
+      )}
+    </span>
+  );
+}
+
+/** The Ora brand logo (Flow Dent is Ora's exclusive agent). */
+export function OraLogo({ height = 28, variant = 'color' }) {
+  return (
+    <img
+      className="ora-logo"
+      src={brandAsset(variant === 'white' ? 'ora-logo-white.png' : 'ora-logo.png')}
+      alt="Ora"
+      style={{ height }}
+    />
+  );
+}
+
+/** Brand badge for a product: the Ora logo for Ora products, the plain name for others. */
+export function BrandBadge({ brand, className = '' }) {
+  if (!brand) return null;
+  const isOra = brand.trim().toLowerCase() === 'ora';
+  return (
+    <span className={`brand-badge ${isOra ? 'brand-badge-ora' : ''} ${className}`}>
+      {isOra ? <OraLogo height={14} /> : brand}
+    </span>
   );
 }

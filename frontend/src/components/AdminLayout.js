@@ -63,8 +63,7 @@ export default function AdminLayout() {
     <div className="admin-shell">
       <aside className={`admin-sidebar ${open ? 'open' : ''}`}>
         <Link to="/admin" className="brand admin-brand">
-          <Logo size={30} />
-          <span className="brand-name">{t.brand}</span>
+          <Logo size={38} variant="white" />
           <span className="pill">{t.admin.title}</span>
         </Link>
         <nav className="admin-nav" onClick={() => setOpen(false)}>
@@ -106,7 +105,8 @@ export default function AdminLayout() {
               <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
           </button>
-          <span className="brand-name">{t.brand} · {t.admin.title}</span>
+          <Logo size={30} />
+          <span className="admin-topbar-title">{t.admin.title}</span>
         </div>
         <Outlet />
       </div>

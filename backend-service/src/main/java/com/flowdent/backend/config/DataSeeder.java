@@ -46,6 +46,20 @@ public class DataSeeder implements CommandLineRunner {
     private final ClientRepository clientRepository;
     private final StockService stockService;
 
+    /**
+     * Sample products tagged with the Ora brand (Flow Dent is Ora's exclusive agent).
+     * Example data only: replace with the real Ora catalogue from the admin panel or Excel import.
+     */
+    private static final java.util.Set<String> ORA_SAMPLE = java.util.Set.of(
+            "Universal Nano-Hybrid Composite A2 (4g)",
+            "Universal Bonding Agent 5ml",
+            "Glass Ionomer Restorative Kit",
+            "Phosphoric Acid Etchant Gel 37% (3x5ml)",
+            "Dust-Free Alginate 453g",
+            "A-Silicone Putty Impression Material",
+            "NiTi Rotary Files Assorted (6 pcs)",
+            "Absorbent Paper Points #30 (200 pcs)");
+
     /** Running number per category prefix, for generated SKUs. */
     private final Map<String, Integer> skuCounters = new HashMap<>();
 
@@ -84,7 +98,7 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private void seedCatalog() {
-        log.info("Seeding Flowdent catalog...");
+        log.info("Seeding Flow Dent catalog...");
 
         Category gloves = cat("Gloves", "القفازات",
                 "Examination and surgical gloves in nitrile, latex and vinyl.",
@@ -252,6 +266,7 @@ public class DataSeeder implements CommandLineRunner {
                 .name(name).nameAr(nameAr).description(desc).descriptionAr(descAr)
                 .price(egp).stockQuantity(0).imageUrl(img).category(c)
                 .sku(String.format("%s-%03d", prefix, n)).costPrice(cost).reorderLevel(10)
+                .brand(ORA_SAMPLE.contains(name) ? "Ora" : null)
                 .build());
         stockService.change(p, StockMovementType.INITIAL, stock, cost, "Opening stock", null);
     }

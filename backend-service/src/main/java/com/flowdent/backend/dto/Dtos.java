@@ -58,7 +58,8 @@ public final class Dtos {
                                  Long categoryId,
                                  String sku,
                                  @DecimalMin("0.00") BigDecimal costPrice,
-                                 @Min(0) Integer reorderLevel) {}
+                                 @Min(0) Integer reorderLevel,
+                                 String brand) {}
 
     // ---------- Orders ----------
     public record OrderItemRequest(@NotNull Long productId, @NotNull @Min(1) Integer quantity) {}

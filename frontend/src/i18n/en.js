@@ -4,8 +4,8 @@ const en = {
   langName: 'English',
   switchTo: 'العربية',
 
-  brand: 'Flowdent',
-  tagline: 'Dental supplies, delivered',
+  brand: 'Flow Dent',
+  tagline: 'you deserve more…',
 
   nav: {
     home: 'Home',
@@ -53,21 +53,29 @@ const en = {
   },
 
   home: {
-    heroEyebrow: 'Trusted by clinics & labs',
-    heroTitle: 'Everything your practice needs, in one order.',
-    heroText: 'Gloves, endodontics, restoratives, sterilization and everyday disposables — stocked, priced clearly and delivered to your clinic or ready for pickup.',
+    heroTitle: 'Dental supplies for clinics and labs, from Alexandria.',
+    heroText: 'Gloves, endodontics, restoratives, impression materials and everyday disposables. Priced in Egyptian pounds and delivered to your clinic, or ready for pickup at our shop.',
     shopNow: 'Shop all products',
     browseCategories: 'Browse categories',
+    agentOf: 'The exclusive agent of',
+    oraTitle: 'Ora products',
+    oraText: 'Flow Dent is the exclusive agent of Ora. Order Ora materials directly from us.',
+    oraCta: 'Shop Ora',
     categoriesTitle: 'Shop by category',
     featuredTitle: 'Popular supplies',
-    perks: [
-      { title: 'Fast delivery', text: 'Home or clinic delivery, or collect from our shop.' },
-      { title: 'Pay your way', text: 'Card online, cash or card machine on delivery.' },
-      { title: 'Clinic-grade', text: 'Certified products from trusted manufacturers.' },
-    ],
+  },
+
+  contact: {
+    title: 'Visit or call us',
+    address: 'Address',
+    phone: 'Phone',
+    email: 'Email',
+    openMap: 'Open in Google Maps',
   },
 
   products: {
+    brand: 'Brand',
+    allBrands: 'All brands',
     title: 'All products',
     filterByCategory: 'Category',
     allCategories: 'All categories',
@@ -166,7 +174,7 @@ const en = {
     signingIn: 'Signing in…',
     signUp: 'Create account',
     signingUp: 'Creating account…',
-    noAccount: 'New to Flowdent?',
+    noAccount: 'New to Flow Dent?',
     haveAccount: 'Already have an account?',
     invalid: 'Invalid email or password.',
     passwordMin: 'At least 6 characters',
@@ -226,6 +234,8 @@ const en = {
   },
 
   admin: {
+    brand: 'Brand',
+    brandHint: 'e.g. Ora',
     title: 'Admin',
     backToStore: 'Back to store',
     dashboard: 'Dashboard',

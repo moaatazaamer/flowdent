@@ -1,4 +1,4 @@
-# Flowdent — Dental Supplies Store
+# Flow Dent — Dental Supplies Store
 
 Full-stack B2B e-commerce and back-office app for a dental supplies business: a bilingual **English / Arabic (RTL)** storefront, plus an admin panel that tracks clients (clinics and doctors), providers, purchases, returns, stock, expenses and profit. All money is in **Egyptian pounds (EGP)**.
 

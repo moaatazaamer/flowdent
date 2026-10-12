@@ -111,6 +111,7 @@ public class ProductController {
                 p.setSku(sku);
             }
         }
+        if (req.brand() != null) p.setBrand(req.brand().isBlank() ? null : req.brand().trim());
         if (req.costPrice() != null) p.setCostPrice(req.costPrice().setScale(4, RoundingMode.HALF_UP));
         if (req.reorderLevel() != null) p.setReorderLevel(req.reorderLevel());
     }

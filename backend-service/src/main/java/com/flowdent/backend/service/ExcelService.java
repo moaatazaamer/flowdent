@@ -34,7 +34,7 @@ public class ExcelService {
             {"name", "nameAr", "description", "descriptionAr", "imageUrl"};
     public static final String[] PRODUCT_HEADERS =
             {"name", "nameAr", "description", "descriptionAr", "price", "stockQuantity", "categoryName", "imageUrl",
-             "sku", "costPrice", "reorderLevel"};
+             "sku", "costPrice", "reorderLevel", "brand"};
 
     private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
@@ -157,6 +157,8 @@ public class ExcelService {
                     p.setSku(sku);
                 }
                 if (cost != null) p.setCostPrice(cost);
+                String brand = str(row, 11);
+                if (!brand.isEmpty()) p.setBrand(brand);
                 if (reorder != null) p.setReorderLevel(reorder);
                 p.setName(name);
                 p.setNameAr(nullIfEmpty(str(row, 1)));
@@ -191,7 +193,7 @@ public class ExcelService {
         return build("Products", PRODUCT_HEADERS, List.<Object[]>of(new Object[]{
                 "Nitrile Gloves - Medium (100)", "قفازات نتريل - مقاس متوسط (100)",
                 "Powder-free nitrile examination gloves", "قفازات فحص نتريل خالية من البودرة",
-                450, 100, "Gloves", "", "GLV-NIT-M", 300, 20}));
+                450, 100, "Gloves", "", "GLV-NIT-M", 300, 20, "Ora"}));
     }
 
     public byte[] exportCategories() {
@@ -206,7 +208,7 @@ public class ExcelService {
                 .map(p -> new Object[]{p.getName(), p.getNameAr(), p.getDescription(), p.getDescriptionAr(),
                         p.getPrice(), p.getStockQuantity(),
                         p.getCategory() != null ? p.getCategory().getName() : "", p.getImageUrl(),
-                        p.getSku(), p.getCostPrice(), p.getReorderLevel()})
+                        p.getSku(), p.getCostPrice(), p.getReorderLevel(), p.getBrand()})
                 .toList();
         return build("Products", PRODUCT_HEADERS, rows);
     }

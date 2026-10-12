@@ -27,6 +27,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                OR p.nameAr LIKE CONCAT('%', :q, '%')
                OR p.descriptionAr LIKE CONCAT('%', :q, '%')
                OR LOWER(c.name) LIKE LOWER(CONCAT('%', :q, '%'))
+               OR LOWER(p.brand) LIKE LOWER(CONCAT('%', :q, '%'))
                OR c.nameAr LIKE CONCAT('%', :q, '%')
             """)
     List<Product> search(@Param("q") String q);

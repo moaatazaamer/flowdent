@@ -193,6 +193,29 @@ class BusinessScenarioTest extends ScenarioTestBase {
         call("POST", "/api/admin/suppliers", map("name", "Scenario Delete Supplier"), admin, 409);  // duplicate name
     }
 
+    @Test
+    @DisplayName("Brand (e.g. Ora) is public, searchable and editable")
+    void brandIsPublicAndSearchable() throws Exception {
+        String admin = adminToken();
+        long productId = id(postJson("/api/products", map("name", "Scenario Brand Composite", "price", 500,
+                "stockQuantity", 1, "brand", "Ora"), admin));
+
+        assertThat(str(getJson("/api/products/" + productId, null), "$.brand")).isEqualTo("Ora");
+        List<Object> found = JsonPath.read(getJson("/api/products/search?q=ora", null), "$[?(@.id == " + productId + ")]");
+        assertThat(found).hasSize(1);
+        assertThat(str(findById(getJson("/api/admin/stock", admin), productId), "$.brand")).isEqualTo("Ora");
+
+        // Seeded sample catalogue has Ora products.
+        List<Object> ora = JsonPath.read(getJson("/api/products", null), "$[?(@.brand == 'Ora')]");
+        assertThat(ora.size()).isGreaterThanOrEqualTo(8);
+
+        // Blank brand clears it; omitting brand keeps it.
+        call("PUT", "/api/products/" + productId, map("name", "Scenario Brand Composite", "price", 500), admin, 200);
+        assertThat(str(getJson("/api/products/" + productId, null), "$.brand")).isEqualTo("Ora");
+        call("PUT", "/api/products/" + productId, map("name", "Scenario Brand Composite", "price", 500, "brand", " "), admin, 200);
+        assertThat(JsonPath.<Object>read(getJson("/api/products/" + productId, null), "$.brand")).isNull();
+    }
+
     private BigDecimal clientBalance(long clientId, String token) throws Exception {
         return num(getJson("/api/admin/clients/" + clientId, token), "$.summary.balance");
     }

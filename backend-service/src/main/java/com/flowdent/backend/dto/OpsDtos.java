@@ -25,7 +25,7 @@ public final class OpsDtos {
     // ---------- Stock ----------
 
     /** Admin view of a product including internal cost and stock fields. */
-    public record ProductStockView(Long id, String name, String nameAr, String sku, String imageUrl,
+    public record ProductStockView(Long id, String name, String nameAr, String sku, String brand, String imageUrl,
                                    Long categoryId, String categoryName, String categoryNameAr,
                                    BigDecimal price, BigDecimal costPrice, BigDecimal marginPercent,
                                    int stockQuantity, int reorderLevel, int onOrder,
@@ -40,7 +40,7 @@ public final class OpsDtos {
             }
             int stock = p.getStockQuantity() == null ? 0 : p.getStockQuantity();
             String status = stock <= 0 ? "OUT" : stock <= p.reorderLevelOrDefault() ? "LOW" : "OK";
-            return new ProductStockView(p.getId(), p.getName(), p.getNameAr(), p.getSku(), p.getImageUrl(),
+            return new ProductStockView(p.getId(), p.getName(), p.getNameAr(), p.getSku(), p.getBrand(), p.getImageUrl(),
                     p.getCategory() != null ? p.getCategory().getId() : null,
                     p.getCategory() != null ? p.getCategory().getName() : null,
                     p.getCategory() != null ? p.getCategory().getNameAr() : null,

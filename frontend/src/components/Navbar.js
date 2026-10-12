@@ -26,8 +26,7 @@ export default function Navbar() {
     <header className="navbar">
       <div className="container navbar-inner">
         <Link to="/" className="brand" aria-label={t.brand}>
-          <Logo />
-          <span className="brand-name">{t.brand}</span>
+          <Logo size={42} />
         </Link>
 
         <form className="nav-search" onSubmit={submit} role="search">
