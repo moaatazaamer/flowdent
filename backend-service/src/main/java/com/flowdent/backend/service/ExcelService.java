@@ -191,9 +191,9 @@ public class ExcelService {
 
     public byte[] productTemplate() {
         return build("Products", PRODUCT_HEADERS, List.<Object[]>of(new Object[]{
-                "Nitrile Gloves - Medium (100)", "قفازات نتريل - مقاس متوسط (100)",
-                "Powder-free nitrile examination gloves", "قفازات فحص نتريل خالية من البودرة",
-                450, 100, "Gloves", "", "GLV-NIT-M", 300, 20, "Ora"}));
+                "Saliva Ejectors", "شفاطات لعاب",
+                "Disposable saliva ejectors", "شفاطات لعاب للاستعمال مرة واحدة",
+                120, 50, "Clinical Disposables", "", "ORA-EXAMPLE", 80, 20, "Ora"}));
     }
 
     public byte[] exportCategories() {

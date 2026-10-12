@@ -69,9 +69,17 @@ Give the gateway ~30 seconds after the backend registers before the first reques
 | `orderadmin` | `orderadmin` | ORDER_ADMIN | Dashboard + orders only |
 
 **Change these passwords before any non-local deployment.**
-On first start the seeder also creates 8 dental categories and 31 products (English and Arabic
-names/descriptions, EGP prices, cost prices, SKUs and opening stock), 3 example providers and 4 example clients. Seed images are Unsplash URLs; if any fail to load, a placeholder is shown and
-you can replace them from the admin panel.
+On first start (empty database) the seeder creates the current catalogue: the 13 **Ora** products
+(Flow Dent's own brand) in 4 categories, with English and Arabic names and SKUs `ORA-001`…`ORA-013`.
+The cost price is the USD import cost from the price list × 52 EGP. The selling price starts equal to
+the cost; **Admin → Products** flags these until you set real selling prices. Opening stock is 0: enter
+your counted quantities in **Admin → Stock**, or record purchases. It also adds 3 example providers and
+4 example clients. Products have no photos yet; add them from the admin panel.
+
+The catalogue is only seeded into an empty database. If you already ran an earlier version, start with a
+fresh `ecommerce_db` to get it.
+
+Ora also has its own page at `/ora`, linked from the navbar, the home page and the footer.
 
 ## Features
 
