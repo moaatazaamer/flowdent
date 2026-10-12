@@ -54,6 +54,7 @@ export default function Navbar() {
         <nav className={`nav-links ${open ? 'open' : ''}`}>
           <NavLink to="/" end>{t.nav.home}</NavLink>
           <NavLink to="/products">{t.nav.products}</NavLink>
+          <NavLink to="/ora" className="nav-ora">{t.nav.ora}</NavLink>
           {isAuthenticated && <NavLink to="/orders">{t.nav.orders}</NavLink>}
           {isAuthenticated && <NavLink to="/profile">{t.nav.profile}</NavLink>}
           {isStaff && <NavLink to="/admin" className="nav-admin">{t.nav.admin}</NavLink>}

@@ -13,14 +13,14 @@ const items = [
 ];
 
 describe('Home page', () => {
-  test('hero, exclusive-agent link and the company contact band', async () => {
+  test('hero, own-brand (Ora) link and the company contact band', async () => {
     mockApi({ get: { '/categories': [cat], '/products': items } });
     renderWithProviders(<Home />);
 
     expect(screen.getByText(en.home.heroTitle)).toBeInTheDocument();
     expect(screen.getByText(en.tagline)).toBeInTheDocument();
-    const agent = screen.getByText(en.home.agentOf).closest('a');
-    expect(agent).toHaveAttribute('href', '/products?brand=Ora');
+    const ora = screen.getByText(en.home.ownBrand).closest('a');
+    expect(ora).toHaveAttribute('href', '/ora');
 
     const strip = document.querySelector('.hero-contact');
     expect(within(strip).getByText(COMPANY.address.en)).toBeInTheDocument();
@@ -30,13 +30,14 @@ describe('Home page', () => {
     await screen.findByText(en.home.oraTitle);   // catalogue loaded
   });
 
-  test('Ora section lists in-stock Ora products only', async () => {
-    mockApi({ get: { '/categories': [cat], '/products': items } });
+  test('Ora section lists Ora products only, in-stock first, and links to the Ora page', async () => {
+    mockApi({ get: { '/categories': [cat], '/products': [items[1], items[2], items[0]] } });
     renderWithProviders(<Home />);
     const section = (await screen.findByText(en.home.oraTitle)).closest('section');
-    expect(within(section).getByText('Composite A2')).toBeInTheDocument();
-    expect(within(section).queryByText('Bond (sold out)')).not.toBeInTheDocument();
+    const titles = [...section.querySelectorAll('.product-title')].map((a) => a.textContent);
+    expect(titles).toEqual(['Composite A2', 'Bond (sold out)']);
     expect(within(section).queryByText('Gloves')).not.toBeInTheDocument();
+    expect(within(section).getByText(en.home.oraCta)).toHaveAttribute('href', '/ora');
   });
 
   test('no Ora section when there are no Ora products; Arabic address in Arabic', async () => {

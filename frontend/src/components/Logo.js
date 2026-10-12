@@ -26,7 +26,7 @@ export default function Logo({ size = 40, variant = 'color', wordmark = true }) 
   );
 }
 
-/** The Ora brand logo (Flow Dent is Ora's exclusive agent). */
+/** The Ora logo (Ora is Flow Dent's own brand). */
 export function OraLogo({ height = 28, variant = 'color' }) {
   return (
     <img

@@ -5,7 +5,7 @@ import { useLang } from '../context/LangContext';
 import ProductCard from '../components/ProductCard';
 import ContactStrip from '../components/ContactStrip';
 import { OraLogo } from '../components/Logo';
-import { COMPANY } from '../config/company';
+import { isOwnBrand } from '../config/company';
 import { imgFallback, localized, PLACEHOLDER_IMG } from '../utils/format';
 
 /** The three small stars from the logo. */
@@ -31,11 +31,12 @@ export default function Home() {
     Promise.all([api.get('/categories'), api.get('/products')])
       .then(([c, p]) => {
         setCategories(c.data);
-        const inStock = p.data.filter((x) => x.stockQuantity > 0);
-        setOraProducts(inStock.filter((x) => x.brand === COMPANY.agentBrand).slice(0, 4));
-        // Popular: one in-stock item from each category, for variety.
+        // In-stock items first; out-of-stock ones still show (marked) so the catalogue is visible.
+        const all = [...p.data].sort((a, b) => (b.stockQuantity > 0) - (a.stockQuantity > 0));
+        setOraProducts(all.filter(isOwnBrand).slice(0, 4));
+        // Popular: one item from each category, for variety.
         const seen = {};
-        setProducts(inStock.filter((x) => {
+        setProducts(all.filter((x) => {
           const k = x.category?.id ?? 'none';
           seen[k] = (seen[k] || 0) + 1;
           return seen[k] <= 1;
@@ -63,8 +64,8 @@ export default function Home() {
             </div>
             <p className="hero-tagline"><Sparkles /> {t.tagline}</p>
           </div>
-          <Link to={`/products?brand=${COMPANY.agentBrand}`} className="hero-agent">
-            <span className="hero-agent-label">{t.home.agentOf}</span>
+          <Link to="/ora" className="hero-agent">
+            <span className="hero-agent-label">{t.home.ownBrand}</span>
             <OraLogo height={78} />
             <span className="hero-agent-cta">{t.home.oraCta}</span>
           </Link>
@@ -85,7 +86,7 @@ export default function Home() {
                 <h2>{t.home.oraTitle}</h2>
                 <p className="muted">{t.home.oraText}</p>
               </div>
-              <Link to={`/products?brand=${COMPANY.agentBrand}`} className="btn btn-ora">{t.home.oraCta}</Link>
+              <Link to="/ora" className="btn btn-ora">{t.home.oraCta}</Link>
             </div>
             <div className="product-grid">
               {oraProducts.map((p) => <ProductCard key={p.id} product={p} />)}

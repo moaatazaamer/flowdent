@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import api from '../api';
 import { useLang } from '../context/LangContext';
 import ProductCard from '../components/ProductCard';
 import { localized } from '../utils/format';
 import { BrandBadge } from '../components/Logo';
-import { COMPANY } from '../config/company';
+import { isOwnBrand } from '../config/company';
 
 export default function Products() {
   const { t, lang } = useLang();
@@ -52,7 +52,7 @@ export default function Products() {
   };
   const selectCategory = (id) => update({ category: id });
   const selectBrand = (b) => update({ brand: b });
-  const isAgentBrand = brand.toLowerCase() === COMPANY.agentBrand.toLowerCase();
+  const isAgentBrand = isOwnBrand({ brand });
   const title = current
     ? localized(current, 'name', lang)
     : brand ? (isAgentBrand ? t.home.oraTitle : brand) : t.products.title;
@@ -63,7 +63,7 @@ export default function Products() {
         <div>
           <h1>{title}</h1>
           {current && <p className="muted">{localized(current, 'description', lang)}</p>}
-          {!current && isAgentBrand && <p className="muted">{t.home.oraText}</p>}
+          {!current && isAgentBrand && <p className="muted">{t.home.oraText} <Link to="/ora" className="link">{t.home.oraCta}</Link></p>}
         </div>
         <label className="inline-field">
           <span>{t.products.sortBy}</span>

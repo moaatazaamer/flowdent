@@ -13,7 +13,7 @@ class SecurityScenarioTest extends ScenarioTestBase {
     @DisplayName("The catalogue is public; admin APIs need a token")
     void publicCatalogueAndProtectedAdmin() throws Exception {
         String products = getJson("/api/products", null);
-        assertThat(JsonPath.<Integer>read(products, "$.length()")).isGreaterThanOrEqualTo(30);  // seeded catalogue
+        assertThat(JsonPath.<Integer>read(products, "$.length()")).isGreaterThanOrEqualTo(13);  // seeded Ora catalogue
         getJson("/api/categories", null);
         getJson("/api/payment/config", null);
 
@@ -76,6 +76,17 @@ class SecurityScenarioTest extends ScenarioTestBase {
         String stock = getJson("/api/admin/stock", admin);
         java.util.List<Object> withoutCost = JsonPath.read(stock, "$[?(@.sku =~ /[A-Z]{3}-\\d{3}/ && @.costPrice == null)]");
         assertThat(withoutCost).isEmpty();
+
+        // The price list: USD import cost × 52 = EGP cost; selling price starts at cost, stock at 0.
+        java.util.List<java.util.Map<String, Object>> bib = JsonPath.read(stock, "$[?(@.sku == 'ORA-001')]");
+        assertThat(bib).hasSize(1);
+        assertThat(bib.get(0).get("name")).isEqualTo("Dental Bib");
+        assertThat(bib.get(0).get("brand")).isEqualTo("Ora");
+        assertThat(new java.math.BigDecimal(bib.get(0).get("costPrice").toString())).isEqualByComparingTo("234.00");
+        assertThat(new java.math.BigDecimal(bib.get(0).get("price").toString())).isEqualByComparingTo("234.00");
+        assertThat(((Number) bib.get(0).get("stockQuantity")).intValue()).isZero();
+        java.util.List<Object> needles = JsonPath.read(stock, "$[?(@.sku == 'ORA-013' && @.name == 'Irrigation Needles')]");
+        assertThat(needles).hasSize(1);
         assertThat(str(getJson("/api/payment/config", null), "$.currency")).isEqualToIgnoringCase("egp");
     }
 }

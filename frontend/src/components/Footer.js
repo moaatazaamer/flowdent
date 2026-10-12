@@ -12,8 +12,8 @@ export default function Footer() {
           <Logo size={46} variant="white" />
           <p className="footer-tagline">{t.tagline}</p>
         </div>
-        <Link to="/products?brand=Ora" className="footer-agent">
-          <span>{t.home.agentOf}</span>
+        <Link to="/ora" className="footer-agent">
+          <span>{t.home.ownBrand}</span>
           <OraLogo height={30} variant="white" />
         </Link>
       </div>

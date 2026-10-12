@@ -11,6 +11,9 @@ const EMPTY = {
   sku: '', costPrice: '', reorderLevel: 10, brand: '',
 };
 
+/** Selling price not above cost: still needs a real selling price. */
+const atCost = (p) => p.costPrice != null && Number(p.price) <= Number(p.costPrice);
+
 export default function AdminProducts() {
   const { t, lang } = useLang();
   const [products, setProducts] = useState([]);
@@ -21,6 +24,7 @@ export default function AdminProducts() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [listError, setListError] = useState('');
+  const [onlyAtCost, setOnlyAtCost] = useState(false);
 
   const load = useCallback(() => {
     Promise.all([api.get('/products'), api.get('/categories'), api.get('/admin/stock')])
@@ -40,15 +44,18 @@ export default function AdminProducts() {
 
   useEffect(load, [load]);
 
+  const atCostCount = products.filter(atCost).length;
+
   const visible = useMemo(() => {
     const f = filter.trim().toLowerCase();
     return products.filter((p) => {
+      if (onlyAtCost && !atCost(p)) return false;
       if (catFilter && String(p.category?.id) !== catFilter) return false;
       if (!f) return true;
       return (p.name || '').toLowerCase().includes(f) || (p.nameAr || '').includes(filter.trim())
         || (p.sku || '').toLowerCase().includes(f);
     });
-  }, [products, filter, catFilter]);
+  }, [products, filter, catFilter, onlyAtCost]);
 
   const openEdit = (p) => {
     setError('');
@@ -118,6 +125,14 @@ export default function AdminProducts() {
         <span className="muted small">{t.products.count(visible.length)}</span>
       </div>
       {listError && <div className="alert alert-error">{listError}</div>}
+      {atCostCount > 0 && (
+        <div className="alert alert-warn" role="status">
+          <span>{t.ops.priceAtCost(atCostCount)}</span>
+          <button className="btn btn-sm btn-outline" onClick={() => setOnlyAtCost((v) => !v)}>
+            {onlyAtCost ? t.ops.showAll : t.ops.showThem}
+          </button>
+        </div>
+      )}
 
       <div className="table-wrap card">
         <table className="table">
@@ -144,7 +159,10 @@ export default function AdminProducts() {
                 </td>
                 <td>{p.category ? localized(p.category, 'name', lang) : '—'}</td>
                 <td className="num">{p.costPrice != null ? formatPrice(p.costPrice, lang) : '—'}</td>
-                <td className="num">{formatPrice(p.price, lang)}</td>
+                <td className="num">
+                  {formatPrice(p.price, lang)}
+                  {atCost(p) && <div><span className="pill pill-warn">{t.ops.atCost}</span></div>}
+                </td>
                 <td className="num">{p.marginPercent != null ? `${p.marginPercent}%` : '—'}</td>
                 <td className="num">
                   <span className={`pill ${p.stockQuantity === 0 ? 'pill-bad' : p.stockQuantity <= p.reorderLevel ? 'pill-warn' : 'pill-muted'}`}>{p.stockQuantity}</span>

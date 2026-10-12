@@ -10,9 +10,12 @@ export const COMPANY = {
   },
   mapsUrl: 'https://www.google.com/maps/search/?api=1&query=' +
     encodeURIComponent('شارع طاغور مستشفى غبور الأزاريطة الإسكندرية'),
-  /** Product brand Flow Dent is the exclusive agent for. */
-  agentBrand: 'Ora',
+  /** Flow Dent's own product brand (has its own page at /ora). */
+  ownBrand: 'Ora',
 };
+
+/** True for products of Flow Dent's own brand (Ora). */
+export const isOwnBrand = (p) => (p?.brand || '').trim().toLowerCase() === COMPANY.ownBrand.toLowerCase();
 
 /** International dialling form for tel: links (Egypt, +20). */
 export const telHref = (phone) => `tel:+20${phone.replace(/^0/, '')}`;

@@ -205,9 +205,9 @@ class BusinessScenarioTest extends ScenarioTestBase {
         assertThat(found).hasSize(1);
         assertThat(str(findById(getJson("/api/admin/stock", admin), productId), "$.brand")).isEqualTo("Ora");
 
-        // Seeded sample catalogue has Ora products.
+        // The seeded catalogue is the Ora product line (13 products + the one above).
         List<Object> ora = JsonPath.read(getJson("/api/products", null), "$[?(@.brand == 'Ora')]");
-        assertThat(ora.size()).isGreaterThanOrEqualTo(8);
+        assertThat(ora.size()).isGreaterThanOrEqualTo(14);
 
         // Blank brand clears it; omitting brand keeps it.
         call("PUT", "/api/products/" + productId, map("name", "Scenario Brand Composite", "price", 500), admin, 200);

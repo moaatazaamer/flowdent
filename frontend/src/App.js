@@ -12,6 +12,7 @@ import Footer from './components/Footer';
 
 import Home from './pages/Home';
 import Products from './pages/Products';
+import Ora from './pages/Ora';
 import Search from './pages/Search';
 import ProductDetail from './pages/ProductDetail';
 import Cart from './pages/Cart';
@@ -81,6 +82,7 @@ export default function App() {
             <Routes>
               <Route path="/" element={<Shop><Home /></Shop>} />
               <Route path="/products" element={<Shop><Products /></Shop>} />
+              <Route path="/ora" element={<Shop><Ora /></Shop>} />
               <Route path="/search" element={<Shop><Search /></Shop>} />
               <Route path="/products/:id" element={<Shop><ProductDetail /></Shop>} />
               <Route path="/cart" element={<Shop><Cart /></Shop>} />

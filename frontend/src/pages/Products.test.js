@@ -30,7 +30,7 @@ describe('Products page brands', () => {
     expect(screen.queryByText('Nitrile Gloves')).not.toBeInTheDocument();
     expect(screen.queryByText('Acme Etchant')).not.toBeInTheDocument();
     expect(screen.getByText(en.home.oraTitle, { selector: 'h1' })).toBeInTheDocument();
-    expect(screen.getByText(en.home.oraText)).toBeInTheDocument();
+    expect(screen.getByText(en.home.oraCta)).toHaveAttribute('href', '/ora');
   });
 
   test('brand chips list each brand once and switch the filter', async () => {
