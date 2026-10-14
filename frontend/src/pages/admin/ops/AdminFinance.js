@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../../../api';
 import { useLang } from '../../../context/LangContext';
 import { formatPrice, todayIso } from '../../../utils/format';
@@ -75,6 +76,7 @@ export default function AdminFinance() {
   const [range, setRange] = useState(presetRange('thisMonth'));
   const [data, setData] = useState(null);
   const [monthly, setMonthly] = useState([]);
+  const [yearly, setYearly] = useState([]);
   const [error, setError] = useState(false);
 
   useEffect(() => {
@@ -84,6 +86,10 @@ export default function AdminFinance() {
 
   useEffect(() => {
     api.get('/admin/finance/monthly', { params: { months: 12 } }).then((r) => setMonthly(r.data)).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    api.get('/admin/finance/yearly').then((r) => setYearly(Array.isArray(r.data) ? r.data : [])).catch(() => {});
   }, []);
 
   const choose = (key) => {
@@ -106,6 +112,9 @@ export default function AdminFinance() {
     <div className="admin-page">
       <div className="page-head">
         <h1>{t.ops.finance}</h1>
+        <div className="finance-actions">
+          <Link to="/admin/old-records" className="btn btn-outline">{t.simple.importOld}</Link>
+        </div>
       </div>
 
       <div className="toolbar">
@@ -123,6 +132,7 @@ export default function AdminFinance() {
       </div>
 
       {error && <div className="alert alert-error">{t.common.error}</div>}
+      {data && data.oldRecords > 0 && <p className="small muted">{t.simple.includesOld(data.oldRecords)}</p>}
       {!data ? <p className="muted">{t.common.loading}</p> : (
         <>
           <div className="stat-grid">
@@ -199,6 +209,31 @@ export default function AdminFinance() {
             </section>
           </div>
         </>
+      )}
+
+      {yearly.some((y) => y.oldRecords > 0 || Number(y.sales) > 0 || Number(y.expenses) > 0) && (
+        <section className="card section-gap">
+          <h3>{t.simple.byYear}</h3>
+          <div className="table-wrap">
+            <table className="table year-table">
+              <thead><tr>
+                <th>{t.old.year}</th><th className="num">{t.simple.sales}</th><th className="num">{t.ops.costOfGoods}</th>
+                <th className="num">{t.simple.spent}</th><th className="num">{t.simple.profit}</th>
+              </tr></thead>
+              <tbody>
+                {[...yearly].reverse().map((y) => (
+                  <tr key={y.year}>
+                    <td>{y.year}{y.oldRecords > 0 && <div className="small muted">{t.simple.includesOld(y.oldRecords)}</div>}</td>
+                    <td className="num">{formatPrice(y.netSales, lang)}</td>
+                    <td className="num">{formatPrice(y.costOfGoods, lang)}</td>
+                    <td className="num">{formatPrice(y.expenses, lang)}</td>
+                    <td className={`num ${Number(y.netProfit) < 0 ? 'neg' : ''}`}><strong>{formatPrice(y.netProfit, lang)}</strong></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
       )}
 
       {monthly.length > 0 && (

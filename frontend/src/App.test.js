@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import App from './App';
 import en from './i18n/en';
 import { mockApi } from './test-utils';
@@ -37,11 +37,20 @@ describe('App routing and roles', () => {
     window.history.pushState({}, '', '/admin');
     render(<App />);
 
-    const nav = (await screen.findByText(en.ops.groupOperations)).closest('nav');
-    for (const label of [en.admin.orders, en.ops.clients, en.ops.purchases, en.ops.providers, en.ops.returns,
-      en.ops.stock, en.ops.expenses, en.ops.finance, en.admin.products, en.admin.categories, en.admin.import]) {
+    const nav = (await screen.findByText(en.simple.sell, { selector: 'nav a span' })).closest('nav');
+    // The short menu: the everyday things only.
+    for (const label of [en.admin.dashboard, en.simple.sell, en.ops.clients, en.simple.buy, en.ops.stock,
+      en.simple.money, en.admin.products]) {
       expect(within(nav).getByText(label)).toBeInTheDocument();
     }
+    expect(within(nav).queryByText(en.ops.providers)).not.toBeInTheDocument();
+    // Everything else is behind "More".
+    fireEvent.click(within(nav).getByText(en.simple.more, { exact: false }));
+    for (const label of [en.old.menuTitle, en.ops.expenses, en.ops.providers, en.ops.returns,
+      en.admin.categories, en.admin.import]) {
+      expect(within(nav).getByText(label)).toBeInTheDocument();
+    }
+    expect(await screen.findByText(en.simple.welcome)).toBeInTheDocument();
     expect(await screen.findByText(en.admin.revenue)).toBeInTheDocument();
   });
 
@@ -51,7 +60,7 @@ describe('App routing and roles', () => {
     render(<App />);
 
     await waitFor(() => expect(window.location.pathname).toBe('/admin/orders'));
-    const nav = (await screen.findByText(en.admin.orders, { selector: 'nav a span' })).closest('nav');
+    const nav = (await screen.findByText(en.simple.sell, { selector: 'nav a span' })).closest('nav');
     expect(within(nav).queryByText(en.ops.clients)).not.toBeInTheDocument();
     expect(within(nav).queryByText(en.ops.finance)).not.toBeInTheDocument();
     expect(screen.getByText(en.admin.readOnlyRole)).toBeInTheDocument();
@@ -62,7 +71,7 @@ describe('App routing and roles', () => {
     window.history.pushState({}, '', '/admin');
     render(<App />);
     await waitFor(() => expect(window.location.pathname).toBe('/'));
-    expect(screen.queryByText(en.ops.groupOperations)).not.toBeInTheDocument();
+    expect(screen.queryByText(en.simple.welcome)).not.toBeInTheDocument();
     expect(await screen.findByText(en.home.heroTitle)).toBeInTheDocument();
   });
 });

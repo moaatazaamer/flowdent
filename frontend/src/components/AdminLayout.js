@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useLang } from '../context/LangContext';
 import { useAuth } from '../context/AuthContext';
 import Logo from './Logo';
@@ -18,6 +18,7 @@ const ICONS = {
   stock: 'M3 7l9-4 9 4-9 4-9-4zm0 5l9 4 9-4M3 17l9 4 9-4',
   expenses: 'M4 6h16v12H4zM4 10h16M8 15h3',
   finance: 'M4 20V10M10 20V4M16 20v-7M22 20H2',
+  history: 'M12 8v5l3 2M4 12a8 8 0 108-8 8 8 0 00-6 2.7M4 4v4h4',
 };
 
 function Icon({ name }) {
@@ -33,31 +34,35 @@ export default function AdminLayout() {
   const { user, isAdmin, logout } = useAuth();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const { pathname } = useLocation();
 
-  const groups = [
-    { label: null, links: [
-      { to: '/admin', label: t.admin.dashboard, icon: 'dashboard', end: true, show: true },
-    ] },
-    { label: t.ops.groupSales, links: [
-      { to: '/admin/orders', label: t.admin.orders, icon: 'orders', show: true },
-      { to: '/admin/clients', label: t.ops.clients, icon: 'clients', show: isAdmin },
-    ] },
-    { label: t.ops.groupOperations, links: [
-      { to: '/admin/purchases', label: t.ops.purchases, icon: 'purchases', show: isAdmin },
-      { to: '/admin/providers', label: t.ops.providers, icon: 'providers', show: isAdmin },
-      { to: '/admin/returns', label: t.ops.returns, icon: 'returns', show: isAdmin },
-      { to: '/admin/stock', label: t.ops.stock, icon: 'stock', show: isAdmin },
-    ] },
-    { label: t.ops.groupMoney, links: [
-      { to: '/admin/expenses', label: t.ops.expenses, icon: 'expenses', show: isAdmin },
-      { to: '/admin/finance', label: t.ops.finance, icon: 'finance', show: isAdmin },
-    ] },
-    { label: t.ops.groupCatalog, links: [
-      { to: '/admin/products', label: t.admin.products, icon: 'products', show: isAdmin },
-      { to: '/admin/categories', label: t.admin.categories, icon: 'categories', show: isAdmin },
-      { to: '/admin/import', label: t.admin.import, icon: 'import', show: isAdmin },
-    ] },
+  const main = [
+    { to: '/admin', label: t.admin.dashboard, icon: 'dashboard', end: true, show: true },
+    { to: '/admin/orders', label: t.simple.sell, icon: 'orders', show: true },
+    { to: '/admin/clients', label: t.ops.clients, icon: 'clients', show: isAdmin },
+    { to: '/admin/purchases', label: t.simple.buy, icon: 'purchases', show: isAdmin },
+    { to: '/admin/stock', label: t.ops.stock, icon: 'stock', show: isAdmin },
+    { to: '/admin/finance', label: t.simple.money, icon: 'finance', show: isAdmin },
+    { to: '/admin/products', label: t.admin.products, icon: 'products', show: isAdmin },
   ];
+  const more = [
+    { to: '/admin/old-records', label: t.old.menuTitle, icon: 'history', show: isAdmin },
+    { to: '/admin/expenses', label: t.ops.expenses, icon: 'expenses', show: isAdmin },
+    { to: '/admin/providers', label: t.ops.providers, icon: 'providers', show: isAdmin },
+    { to: '/admin/returns', label: t.ops.returns, icon: 'returns', show: isAdmin },
+    { to: '/admin/categories', label: t.admin.categories, icon: 'categories', show: isAdmin },
+    { to: '/admin/import', label: t.admin.import, icon: 'import', show: isAdmin },
+  ].filter((l) => l.show);
+  const onMorePage = more.some((l) => pathname === l.to || pathname.startsWith(`${l.to}/`));
+  const showMore = moreOpen || onMorePage;
+
+  const renderLink = (l) => (
+    <NavLink key={l.to} to={l.to} end={l.end}>
+      <Icon name={l.icon} />
+      <span>{l.label}</span>
+    </NavLink>
+  );
 
   return (
     <div className="admin-shell">
@@ -67,21 +72,22 @@ export default function AdminLayout() {
           <span className="pill">{t.admin.title}</span>
         </Link>
         <nav className="admin-nav" onClick={() => setOpen(false)}>
-          {groups.map((g, gi) => {
-            const visible = g.links.filter((l) => l.show);
-            if (!visible.length) return null;
-            return (
-              <div key={gi} className="admin-nav-group">
-                {g.label && <div className="admin-nav-label">{g.label}</div>}
-                {visible.map((l) => (
-                  <NavLink key={l.to} to={l.to} end={l.end}>
-                    <Icon name={l.icon} />
-                    <span>{l.label}</span>
-                  </NavLink>
-                ))}
-              </div>
-            );
-          })}
+          <div className="admin-nav-group">
+            {main.filter((l) => l.show).map(renderLink)}
+          </div>
+          {more.length > 0 && (
+            <div className="admin-nav-group">
+              <button
+                type="button"
+                className="nav-more"
+                aria-expanded={showMore}
+                onClick={(e) => { e.stopPropagation(); setMoreOpen(!showMore); }}
+              >
+                {showMore ? t.simple.less : t.simple.more} <span aria-hidden="true">{showMore ? '▴' : '▾'}</span>
+              </button>
+              {showMore && more.map(renderLink)}
+            </div>
+          )}
         </nav>
         <div className="admin-sidebar-foot">
           <div className="small muted">{t.admin.signedInAs}</div>

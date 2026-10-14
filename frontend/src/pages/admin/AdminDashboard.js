@@ -73,8 +73,36 @@ export default function AdminDashboard() {
 
   return (
     <div className="admin-page">
-      <h1>{t.admin.dashboard}</h1>
+      <h1>{t.simple.welcome}</h1>
 
+      <div className="big-actions">
+        <Link to="/admin/orders" className="big-action"><strong>{t.simple.sell}</strong><span>{t.simple.sellText}</span></Link>
+        {isAdmin && <Link to="/admin/purchases" className="big-action"><strong>{t.simple.buy}</strong><span>{t.simple.buyText}</span></Link>}
+        {isAdmin && <Link to="/admin/stock" className="big-action"><strong>{t.simple.stockTitle}</strong><span>{t.simple.stockText}</span></Link>}
+        {isAdmin && <Link to="/admin/finance" className="big-action"><strong>{t.simple.money}</strong><span>{t.simple.moneyText}</span></Link>}
+        {isAdmin && <Link to="/admin/products" className="big-action"><strong>{t.simple.productsTitle}</strong><span>{t.simple.productsText}</span></Link>}
+        {isAdmin && <Link to="/admin/expenses" className="big-action"><strong>{t.simple.addExpense}</strong></Link>}
+        {isAdmin && <Link to="/admin/old-records" className="big-action big-action-accent"><strong>{t.simple.oldRecords}</strong></Link>}
+      </div>
+
+      <section className="card attention">
+        <h3>{t.simple.needsAttention}</h3>
+        {data.pendingOrders === 0 && data.lowStockProducts.length === 0 ? (
+          <p className="muted">{t.simple.allGood}</p>
+        ) : (
+          <ul className="rank-list">
+            {data.pendingOrders > 0 && (
+              <li><span>{t.simple.pending(data.pendingOrders)}</span><Link to="/admin/orders" className="link small">{t.common.viewAll}</Link></li>
+            )}
+            {data.lowStockProducts.length > 0 && (
+              <li><span>{t.simple.lowStock(data.lowStockProducts.length)}</span>{isAdmin && <Link to="/admin/stock" className="link small">{t.ops.stock}</Link>}</li>
+            )}
+          </ul>
+        )}
+      </section>
+
+      <details className="more-details">
+      <summary>{t.simple.moreDetails}</summary>
       <div className="stat-grid">
         <Stat label={t.admin.revenue} value={formatPrice(data.totalRevenue, lang)} hint={`${t.admin.paidRevenue}: ${formatPrice(data.paidRevenue, lang)}`} />
         <Stat label={t.admin.totalOrders} value={data.totalOrders} hint={`${t.admin.pendingOrders}: ${data.pendingOrders}`} />
@@ -157,6 +185,7 @@ export default function AdminDashboard() {
           </div>
         </section>
       </div>
+      </details>
     </div>
   );
 }

@@ -70,7 +70,8 @@ public final class OpsDtos {
     public record SupplierSummary(Long id, String name, String contactName, String phone, String email,
                                   String address, String notes, boolean active, LocalDateTime createdAt,
                                   long purchaseCount, BigDecimal totalBought, BigDecimal totalPaid,
-                                  BigDecimal totalReturned, BigDecimal balance, LocalDate lastPurchase) {}
+                                  BigDecimal totalReturned, BigDecimal balance, LocalDate lastPurchase,
+                                  BigDecimal openingBalance) {}
 
     public record SupplierPaymentRequest(@NotNull Long supplierId, Long purchaseId,
                                          @NotNull @DecimalMin("0.01") BigDecimal amount,
@@ -119,7 +120,8 @@ public final class OpsDtos {
                                 String email, String address, String city, String notes,
                                 boolean registered, LocalDateTime createdAt,
                                 long orderCount, BigDecimal totalSales, BigDecimal totalPaid,
-                                BigDecimal totalReturned, BigDecimal balance, LocalDateTime lastOrder) {}
+                                BigDecimal totalReturned, BigDecimal balance, LocalDateTime lastOrder,
+                                BigDecimal openingBalance) {}
 
     public record ClientPaymentRequest(@NotNull Long clientId, Long orderId,
                                        @NotNull @DecimalMin("0.01") BigDecimal amount,

@@ -27,6 +27,7 @@ import AdminCategories from './pages/admin/AdminCategories';
 import AdminProducts from './pages/admin/AdminProducts';
 import AdminOrders from './pages/admin/AdminOrders';
 import AdminImport from './pages/admin/AdminImport';
+import OldRecords from './pages/admin/OldRecords';
 import AdminClients from './pages/admin/ops/AdminClients';
 import AdminProviders from './pages/admin/ops/AdminProviders';
 import AdminPurchases from './pages/admin/ops/AdminPurchases';
@@ -113,6 +114,7 @@ export default function App() {
                 <Route path="finance" element={<RequireAdmin><AdminFinance /></RequireAdmin>} />
                 <Route path="customers" element={<Navigate to="/admin/clients" replace />} />
                 <Route path="import" element={<RequireAdmin><AdminImport /></RequireAdmin>} />
+                <Route path="old-records" element={<RequireAdmin><OldRecords /></RequireAdmin>} />
               </Route>
 
               <Route path="*" element={<Navigate to="/" replace />} />

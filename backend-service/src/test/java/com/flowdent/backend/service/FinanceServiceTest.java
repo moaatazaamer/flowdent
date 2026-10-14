@@ -37,6 +37,8 @@ class FinanceServiceTest {
     @Mock ProductRepository productRepository;
     @Mock LedgerService ledgerService;
 
+    @Mock LegacyRecordRepository legacyRepository;
+
     @InjectMocks FinanceService financeService;
 
     final LocalDate today = LocalDate.now();

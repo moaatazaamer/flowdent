@@ -11,6 +11,7 @@ import com.flowdent.backend.model.ClientType;
 import com.flowdent.backend.model.Order;
 import com.flowdent.backend.repository.ClientPaymentRepository;
 import com.flowdent.backend.repository.ClientRepository;
+import com.flowdent.backend.repository.LegacyRecordRepository;
 import com.flowdent.backend.repository.OrderRepository;
 import com.flowdent.backend.repository.ProductReturnRepository;
 import com.flowdent.backend.service.ClientService;
@@ -37,6 +38,7 @@ public class ClientController {
     private final ClientPaymentRepository paymentRepository;
     private final OrderRepository orderRepository;
     private final ProductReturnRepository returnRepository;
+    private final LegacyRecordRepository legacyRepository;
     private final ClientService clientService;
     private final LedgerService ledgerService;
     private final OrderService orderService;
@@ -76,7 +78,7 @@ public class ClientController {
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         Client c = get(id);
         if (orderRepository.existsByClientId(id) || paymentRepository.existsByClientId(id)
-                || returnRepository.existsByClientId(id)) {
+                || returnRepository.existsByClientId(id) || legacyRepository.existsByClientId(id)) {
             throw new ApiException(HttpStatus.CONFLICT, "This client has orders or payments and cannot be deleted.");
         }
         clientRepository.delete(c);

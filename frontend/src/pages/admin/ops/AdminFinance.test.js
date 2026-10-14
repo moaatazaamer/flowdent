@@ -1,10 +1,11 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import AdminFinance from './AdminFinance';
 import { LangProvider } from '../../../context/LangContext';
 import en from '../../../i18n/en';
 import { mockApi } from '../../../test-utils';
 
-const wrap = (ui) => render(<LangProvider>{ui}</LangProvider>);
+const wrap = (ui) => render(<LangProvider><MemoryRouter>{ui}</MemoryRouter></LangProvider>);
 
 const summary = {
   from: '2026-10-01', to: '2026-10-11', sales: 600, orderCount: 1, returns: 200, netSales: 400,
@@ -69,5 +70,25 @@ describe('Finance page', () => {
     fireEvent.change(screen.getByLabelText(en.ops.from), { target: { value: '2026-01-01' } });
     await waitFor(() => expect(api.get).toHaveBeenLastCalledWith('/admin/finance/summary',
       { params: expect.objectContaining({ from: '2026-01-01' }) }));
+  });
+
+  test('shows year-by-year totals with old records and a way to import them', async () => {
+    const yearly = [
+      { year: 2018, netSales: 1500, costOfGoods: 400, expenses: 200, netProfit: 900, sales: 1500, oldRecords: 4 },
+      { year: 2019, netSales: 0, costOfGoods: 0, expenses: 0, netProfit: 0, sales: 0, oldRecords: 0 },
+    ];
+    mockApi({ get: {
+      '/admin/finance/summary': { ...summary, oldRecords: 4 },
+      '/admin/finance/monthly': monthly,
+      '/admin/finance/yearly': yearly,
+    } });
+    wrap(<AdminFinance />);
+
+    expect(await screen.findByText(en.simple.byYear)).toBeInTheDocument();
+    const row = screen.getByText('2018').closest('tr');
+    expect(row).toHaveTextContent(/EGP\s?1,500\.00/);
+    expect(row).toHaveTextContent(en.simple.includesOld(4));
+    expect(screen.getByText(en.simple.includesOld(4), { selector: 'p' })).toBeInTheDocument();
+    expect(screen.getByText(en.simple.importOld, { selector: 'a' })).toHaveAttribute('href', '/admin/old-records');
   });
 });

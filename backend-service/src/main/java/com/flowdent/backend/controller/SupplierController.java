@@ -29,6 +29,7 @@ public class SupplierController {
     private final PurchaseRepository purchaseRepository;
     private final ProductReturnRepository returnRepository;
     private final ExpenseRepository expenseRepository;
+    private final LegacyRecordRepository legacyRepository;
     private final LedgerService ledgerService;
 
     @GetMapping
@@ -72,7 +73,8 @@ public class SupplierController {
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         Supplier s = get(id);
         if (purchaseRepository.countBySupplierId(id) > 0 || paymentRepository.existsBySupplierId(id)
-                || returnRepository.existsBySupplierId(id) || expenseRepository.existsBySupplierId(id)) {
+                || returnRepository.existsBySupplierId(id) || expenseRepository.existsBySupplierId(id)
+                || legacyRepository.existsBySupplierId(id)) {
             throw new ApiException(HttpStatus.CONFLICT,
                     "This provider has history and cannot be deleted. Mark it inactive instead.");
         }

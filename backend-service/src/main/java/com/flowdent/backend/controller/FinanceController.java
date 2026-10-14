@@ -42,6 +42,12 @@ public class FinanceController {
         return financeService.monthly(Math.min(Math.max(months, 1), 36));
     }
 
+    /** One row per year, from the earliest old or new record up to this year. */
+    @GetMapping("/finance/yearly")
+    public List<Map<String, Object>> yearly() {
+        return financeService.yearly();
+    }
+
     // ---------- expenses ----------
 
     @GetMapping("/expenses")

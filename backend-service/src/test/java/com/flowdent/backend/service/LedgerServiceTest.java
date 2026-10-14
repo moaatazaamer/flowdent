@@ -33,6 +33,8 @@ class LedgerServiceTest {
     @Mock PurchaseRepository purchaseRepository;
     @Mock ProductReturnRepository returnRepository;
 
+    @Mock LegacyRecordRepository legacyRepository;
+
     @InjectMocks LedgerService ledgerService;
 
     private ProductReturn clientReturn(Client c, String amount, ReturnSettlement s) {
