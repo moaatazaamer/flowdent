@@ -117,8 +117,9 @@ class LegacyImportScenarioTest extends ScenarioTestBase {
         assertThat(num(y18Json, "$.expenses")).isEqualByComparingTo("200");
         assertThat(num(y18Json, "$.purchases")).isEqualByComparingTo("700");
         assertThat(num(y18Json, "$.netProfit")).isEqualByComparingTo("900");
-        assertThat(num(y18Json, "$.moneyIn")).isEqualByComparingTo("1100"); // 600 + blank paid = full 500
-        assertThat(num(y18Json, "$.moneyOut")).isEqualByComparingTo("900"); // 700 purchase + 200 expense
+        String full = getJson("/api/admin/finance/summary?from=2018-01-01&to=2018-12-31", admin);
+        assertThat(num(full, "$.moneyIn")).isEqualByComparingTo("1100"); // 600 + blank paid = paid in full 500
+        assertThat(num(full, "$.moneyOut")).isEqualByComparingTo("900"); // 700 purchase + 200 expense
         assertThat(JsonPath.<Integer>read(y18Json, "$.oldRecords")).isEqualTo(4);
 
         // Stock is untouched by old records.
