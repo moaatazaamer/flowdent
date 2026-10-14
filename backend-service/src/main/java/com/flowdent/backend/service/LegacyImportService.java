@@ -637,7 +637,7 @@ public class LegacyImportService {
             String catRaw = cell(r, col, F.CATEGORY);
 
             String subject = party.isEmpty() ? notes : party;
-            if (dateRaw.isEmpty() && TOTAL_WORDS.contains(norm1(subject))) {
+            if (TOTAL_WORDS.contains(norm1(dateRaw)) || (dateRaw.isEmpty() && TOTAL_WORDS.contains(norm1(subject)))) {
                 p.warnings.add(label + ", row " + r.line() + " looks like a total line and was skipped.");
                 continue;
             }
