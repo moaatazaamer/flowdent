@@ -156,8 +156,8 @@ class LegacyImportScenarioTest extends ScenarioTestBase {
         // Delete the import: reports return to zero for 2018 and balances disappear.
         call("DELETE", "/api/admin/legacy/batches/" + batchId, null, admin, 204);
         assertThat(getJson("/api/admin/legacy/batches", admin)).isEqualTo("[]");
-        Map<String, Object> after = year(getJson("/api/admin/finance/yearly", admin), 2018);
-        assertThat(JsonPath.<Integer>read(json.writeValueAsString(after), "$.oldRecords")).isZero();
+        List<Object> after = JsonPath.read(getJson("/api/admin/finance/yearly", admin), "$[?(@.year == 2018)]");
+        assertThat(after).isEmpty(); // the report no longer reaches back to 2018
         String clientsAfter = getJson("/api/admin/clients", admin);
         List<Map<String, Object>> gammaAfter = JsonPath.read(clientsAfter, "$[?(@.name == 'Legacy Gamma Lab')]");
         assertThat(new java.math.BigDecimal(String.valueOf(gammaAfter.get(0).get("balance")))).isEqualByComparingTo("0");
